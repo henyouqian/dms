@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="/static/css/ui/jquery-ui-1.8.17.custom.css" />
+        <link rel="stylesheet" type="text/css" href="/static/css/dmsDevMatchEdit.css" />
+		<script type="text/javascript" src="/static/js/jquery-1.7.1.min.js"></script>
+		<script type="text/javascript" src="/static/js/jquery-ui-1.8.17.custom.min.js"></script>
+		<script type="text/javascript" src="/static/js/dmsError.js"></script>
+		<script type="text/javascript" src="/static/js/dmsDevMatchEdit.js"></script>
+		<title>DMS Dev</title>
+	</head>
+	<body>
+        <button id=back>Back</button>
+		<table>
+            <caption>Edit Match</caption>
+			<tr>
+				<th>Name:</th>
+				<td><input id=name type=text value={{data.matchname}} /></td>
+			</tr>
+			<tr>
+				<th>Game:</th>
+				<td>
+                    <select id=gameselect>
+                        {% for game in data.games %}
+                        <option value={{game.id}}>{{game.name}}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+			</tr>
+			<tr>
+				<th>UTC Date:</th>
+				<td><input id=date type=text value={{data.date}} /></td>
+			</tr>
+		</table>
+		<div>
+			<button id=edit>Edit</button>
+            <button id=delete>Delete</button>
+		</div>
+        <script>
+            $('#gameselect').val({{data.gameid}});
+            gMatchid={{data.matchid}};
+        </script>
+	</body>
+</html>
+

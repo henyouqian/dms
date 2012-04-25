@@ -1,0 +1,17 @@
+*{margin:0;padding:0}
+body{
+	font-size: 14px;
+    font-family:Arial;
+}
+#tbl{
+    border-collapse:collapse;
+}
+
+#tbl,#tbl th,#tbl td
+{
+    border: 1px solid black;
+}
+
+#tbledit th{
+    text-align: right;
+}

@@ -1,0 +1,130 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		D088B3B31547DB8F00EF638C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D088B3AB1547DB8F00EF638C /* gctest.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D01A55B414BC2D3F00D8A7EF;
+			remoteInfo = gctest;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		D088B3A21547D11300EF638C /* dms.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = dms.sql; sourceTree = "<group>"; };
+		D088B3A31547D11300EF638C /* account.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = account.sql; sourceTree = "<group>"; };
+		D088B3AB1547DB8F00EF638C /* gctest.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = gctest.xcodeproj; path = gctest/gctest.xcodeproj; sourceTree = "<group>"; };
+		D088B3C21547F8B500EF638C /* dms.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = dms.py; sourceTree = "<group>"; };
+		D088B3C31547F8B500EF638C /* dmsConfig.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = dmsConfig.py; sourceTree = "<group>"; };
+		D088B3C51547F8B500EF638C /* dmsDev.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = dmsDev.py; sourceTree = "<group>"; };
+		D088B3C71547F8B500EF638C /* dmsDevView.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = dmsDevView.py; sourceTree = "<group>"; };
+		D088B3C91547F8B500EF638C /* dmsError.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = dmsError.py; sourceTree = "<group>"; };
+		D088B3CB1547F8B500EF638C /* dmsUser.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = dmsUser.py; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		D088B37B1546AB6E00EF638C = {
+			isa = PBXGroup;
+			children = (
+				D088B3C21547F8B500EF638C /* dms.py */,
+				D088B3C51547F8B500EF638C /* dmsDev.py */,
+				D088B3C71547F8B500EF638C /* dmsDevView.py */,
+				D088B3CB1547F8B500EF638C /* dmsUser.py */,
+				D088B3C91547F8B500EF638C /* dmsError.py */,
+				D088B3C31547F8B500EF638C /* dmsConfig.py */,
+				D088B3A11547D11200EF638C /* sql */,
+				D088B3AB1547DB8F00EF638C /* gctest.xcodeproj */,
+			);
+			sourceTree = "<group>";
+		};
+		D088B3A11547D11200EF638C /* sql */ = {
+			isa = PBXGroup;
+			children = (
+				D088B3A21547D11300EF638C /* dms.sql */,
+				D088B3A31547D11300EF638C /* account.sql */,
+			);
+			path = sql;
+			sourceTree = "<group>";
+		};
+		D088B3AC1547DB8F00EF638C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D088B3B41547DB8F00EF638C /* gctest.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		D088B37D1546AB6E00EF638C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
+			buildConfigurationList = D088B3801546AB6E00EF638C /* Build configuration list for PBXProject "dms" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = D088B37B1546AB6E00EF638C;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = D088B3AC1547DB8F00EF638C /* Products */;
+					ProjectRef = D088B3AB1547DB8F00EF638C /* gctest.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		D088B3B41547DB8F00EF638C /* gctest.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = gctest.app;
+			remoteRef = D088B3B31547DB8F00EF638C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin XCBuildConfiguration section */
+		D088B3821546AB6E00EF638C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		D088B3831546AB6E00EF638C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D088B3801546AB6E00EF638C /* Build configuration list for PBXProject "dms" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D088B3821546AB6E00EF638C /* Debug */,
+				D088B3831546AB6E00EF638C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D088B37D1546AB6E00EF638C /* Project object */;
+}

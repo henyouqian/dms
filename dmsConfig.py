@@ -1,0 +1,5 @@
+host='localhost'
+dms_db='dms_db'
+account_db='account_db'
+user='root'
+passwd='Nmmgb808313'
