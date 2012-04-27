@@ -7,7 +7,7 @@ namespace lw{
 	class HTTPClient;
 	class HTTPMsg{
 	public:
-		HTTPMsg(const char* objName, lw::HTTPClient* pClient, bool useHTTPS = false);
+		HTTPMsg(const char* route, lw::HTTPClient* pClient, bool useHTTPS = false);
         virtual ~HTTPMsg();
         void addParam(const char* param);
 		void send();

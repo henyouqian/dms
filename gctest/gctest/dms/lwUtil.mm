@@ -9,7 +9,7 @@ namespace lw{
 	void srand(){
 #ifdef WIN32
 		std::srand(GetTickCount());
-#else ifdef __APPLE__
+#else //ifdef __APPLE__
 		std::srand(CFAbsoluteTimeGetCurrent());
 #endif
 	}
@@ -83,12 +83,14 @@ UTF82W::~UTF82W(){
 int UTF82W::size(){
 	return [_str length];
 }
+
 const wchar_t* UTF82W::data(){
 	return (const wchar_t*)[_str cStringUsingEncoding:NSUTF16LittleEndianStringEncoding];
 }
 
-UTF82W::operator const wchar_t*(){
+UTF82W:: operator const wchar_t*(){
 	return (const wchar_t*)[_str cStringUsingEncoding:NSUTF16LittleEndianStringEncoding];
 }
+
 
 #endif //#ifdef __APPLE__

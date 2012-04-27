@@ -46,10 +46,10 @@
 @end
 
 namespace lw{
-	HTTPMsg::HTTPMsg(const char* objName, HTTPClient* pClient, bool useHTTPS)
+	HTTPMsg::HTTPMsg(const char* route, HTTPClient* pClient, bool useHTTPS)
 	:_pClient(pClient), _useHTTPS(useHTTPS){
-		lwassert(objName);
-		_buff = objName;
+		lwassert(route);
+		_buff = route;
     }
 
 	HTTPMsg::~HTTPMsg(){
@@ -75,11 +75,11 @@ namespace lw{
 
 	void HTTPClient::sendMsg(HTTPMsg* pMsg, bool useHTTPS){
         std::stringstream ss;
-		const char* objName = pMsg->getBuff().c_str();
+		const char* routeparam = pMsg->getBuff().c_str();
         if ( useHTTPS && _httpsEnable ){
-            ss << "https://" << _strHost.c_str() << objName;
+            ss << "https://" << _strHost.c_str() << routeparam;
         }else{
-            ss << "http://" << _strHost.c_str() << objName;
+            ss << "http://" << _strHost.c_str() << routeparam;
         }
         NSString* urlString=[[NSString alloc] initWithUTF8String:ss.str().c_str()];
         NSURL* url=[[NSURL alloc] initWithString:[urlString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];

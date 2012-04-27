@@ -20,4 +20,4 @@
 	#define lwassert(_e) assert(_e);
 #endif
 
-#endif __LW_LOG_MAC_H__
+#endif //__LW_LOG_MAC_H__
