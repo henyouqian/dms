@@ -1,5 +1,6 @@
 from flask import *
 from tornado.database import Connection
+import MySQLdb
 import pylibmc
 import hashlib
 import uuid
@@ -83,7 +84,7 @@ def devlogin():
 def devlogout():
     session.clear()
     return jsonify(error=DMSERR_NONE)
-    
+
 @devBluePrint.route('/dmsapi/dev/heartbeat')
 def devheartbeat():
     if (not devisLogin()):
@@ -110,13 +111,14 @@ def devaddgame():
         return jsonify(error=DMSERR_LOGIN)
     name = request.args.get('name', type=unicode)
     order = request.args.get('order', type=int)
-    if ( name==None or order==None ):
+    appid = request.args.get('appid', type=int)
+    if ( name==None or order==None or appid==None ):
         return jsonify(error=DMSERR_PARAM)
     row = g.db.get('SELECT COUNT(*) FROM Games WHERE developer_id=%s', g.userid)
     if row['COUNT(*)'] >= GAME_MAX_PER_DEVELOPER:
         return jsonify(error=DMSERR_RANGE)
     try:
-        g.db.execute('INSERT INTO Games (developer_id, name, score_order) VALUES(%s, %s, %s)', g.userid, name, order)
+        g.db.execute('INSERT INTO Games (developer_id, name, score_order, app_id) VALUES(%s, %s, %s, %s)', g.userid, name, order, appid)
     except MySQLdb.IntegrityError as e:
         if ( e.args[0] == 1062 ):
             return jsonify(error=DMSERR_EXIST)
@@ -131,13 +133,14 @@ def devaddgame():
 def deveditgame():
     if (not devisLogin()):
         return jsonify(error=DMSERR_LOGIN)
-    gameId = request.args.get('id', type=int)
+    gameid = request.args.get('id', type=int)
     name = request.args.get('name', type=unicode)
     order = request.args.get('order', type=int)
-    if ( gameId==None or name==None or order==None ):
+    appid = request.args.get('appid', type=int)
+    if ( gameid==None or name==None or order==None or appid==None ):
         return jsonify(error=DMSERR_PARAM)
     try:
-        g.db.execute('UPDATE Games SET name=%s, score_order=%s WHERE developer_id=%s AND game_id=%s', name, order, g.userid, gameId)
+        g.db.execute('UPDATE Games SET name=%s, score_order=%s, app_id=%s WHERE developer_id=%s AND game_id=%s', name, order, appid, g.userid, gameid)
     except MySQLdb.IntegrityError as e:
         if ( e.args[0] == 1062 ):
             return jsonify(error=DMSERR_EXIST, name=name)
@@ -167,8 +170,8 @@ def devgetgames():
     if (not devisLogin()):
         return jsonify(error=DMSERR_LOGIN)
     try:
-        rows = g.db.iter('SELECT game_id, name, score_order FROM Games WHERE developer_id=%s order by game_id DESC', g.userid)
-        data = [{'id':row['game_id'], 'name':row['name'], 'order':row['score_order']} for row in rows]
+        rows = g.db.iter('SELECT game_id, name, score_order, app_id FROM Games WHERE developer_id=%s order by game_id DESC', g.userid)
+        data = [{'id':row['game_id'], 'name':row['name'], 'order':row['score_order'], 'appid':row['app_id']} for row in rows]
         return jsonify(error=DMSERR_NONE, data=data)
     except:
         return jsonify(error=DMSERR_SQL)

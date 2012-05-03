@@ -78,6 +78,20 @@ def userlogout():
         g.mc.delete(token)
     session.clear()
     return jsonify(error=DMSERR_NONE)
+
+
+@userBluePrint.route('/dmsapi/user/gettodaygames')
+def usergettodaygames():
+    if (not userisLogin()):
+        return jsonify(error=DMSERR_LOGIN)
+    appid = request.args.get('appid', type=int)
+    rows = g.db.iter('SELECT g.game_id, s.score, s.time FROM Games AS g INNER JOIN Scores AS s on g.game_id=s.game_id  WHERE g.app_id=%s AND g.developer_id=%s AND s.date=UTC_DATE() AND s.user_id=%s', appid, g.developerid, g.userid)
+    print 'xxxxxxxxxxxxxxxxxxx'
+    for row in rows:
+        print row;
+    print 'yyyyyyyyyyyyyyyyyyy'
+    return jsonify(error=DMSERR_NONE)
+
     
 ###match
 @userBluePrint.route('/dmsapi/user/gettodaymatches')

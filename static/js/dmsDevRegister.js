@@ -5,6 +5,11 @@ $(document).ready(function(){
     $('#back').click(function() {
         back();
     });
+    $("#pw2").keypress(function(event) {
+        if ( event.which == 13 ) {
+            register();
+        }
+    });
     $('button').button();
 });
 

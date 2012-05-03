@@ -24,8 +24,11 @@ var diagHtml = '<table id=tbledit>\
                     <td><input id=order type=checkbox /></td>\
                     <td></td>\
                 </tr>\
+                <tr>\
+                    <th>App ID:</th>\
+                    <td><input id=appid type=text /></td>\
+                </tr>\
             </table>';
-
 
 function addGameDiag(){
     var $dialog = $('<div class=ui-dialog></div>')
@@ -50,10 +53,13 @@ function addGameDiag(){
 function addGame(){
     var name=$('#name').attr('value');
     var order=$('#order').get(0).checked?1:0;
+    var appid=$('#appid').attr('value');
     if ( name == '' ){
         alert('name == NULL');
+    }else if ( appid =='' ){
+        alert('appid == NULL');
     }else{
-        $.getJSON('/dmsapi/dev/addgame', {name:name, order:order}, function(json){
+        $.getJSON('/dmsapi/dev/addgame', {name:name, order:order, appid:appid}, function(json){
             err = json.error;
             if (err==0){
                 getGames();
@@ -68,7 +74,7 @@ function addGame(){
     }
 }
 
-function editGameDiag(id, name, order){
+function editGameDiag(id, name, order, appid){
     var $dialog = $('<div class=ui-dialog></div>')
     .html(diagHtml)
     .dialog({
@@ -88,15 +94,19 @@ function editGameDiag(id, name, order){
     });
     $('#name').attr('value', name);
     $('#order')[0].checked = order==1?true:false;
+    $('#appid').attr('value', appid);
 }
 
 function editGame(id){
     var name=$('#name').attr('value');
     var order=$('#order')[0].checked?1:0;
+    var appid=$('#appid').attr('value');
     if ( name == '' ){
         alert('name == NULL');
+    }else if ( appid =='' ){
+        alert('appid == NULL');
     }else{
-        $.getJSON('/dmsapi/dev/editgame', {id:id, name:name, order:order}, function(json){
+        $.getJSON('/dmsapi/dev/editgame', {id:id, name:name, order:order, appid:appid}, function(json){
             err = json.error;
             if (err==0){
                 getGames();
@@ -151,13 +161,15 @@ function getGames(){
             var str='';
             $(json.data).each(function(i){
                 str+='<tr class=datarow>';
-                str+='<td><button class=edit gameid='+this.id+' name='+this.name+' order='+this.order+'>Edit</button></td>';
+                str+='<td><button class=edit gameid='+this.id+' name='+this.name+' order='+this.order+' appid='+this.appid+'>Edit</button></td>';
                 str+='<td class=name>'+this.name+'</td>';
+                str+='<td>'+this.id+'</td>';
                 var order='ASC';
                 if (this.order==1){
                     order = 'DESC';
                 }
                 str+='<td class=order>'+order+'</td>';
+                str+='<td>'+this.appid+'</td>';
                 str+='<td><button class=del gameid='+this.id+' name='+this.name+'>Del</button></td>';
                 str+='</tr>';
             });
@@ -167,7 +179,8 @@ function getGames(){
                 var id = obj.attr('gameid');
                 var name = obj.attr('name');
                 var order = obj.attr('order');
-                editGameDiag(id, name, order);
+                var appid = obj.attr('appid');
+                editGameDiag(id, name, order, appid);
             });
             $('.del').click(function(){
                 var obj = $(this);
@@ -178,6 +191,7 @@ function getGames(){
         }else{
             errorProc(err);
         }
+        $('button').button();
     });
 }
 

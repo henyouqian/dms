@@ -21,6 +21,9 @@
 -(IBAction)onHeart:(id)sender{
     dmsHeartBeat();
 }
+-(IBAction)onGetTodayGames:(id)sender{
+    dmsGetTodayGames();
+}
 
 - (void)dealloc
 {

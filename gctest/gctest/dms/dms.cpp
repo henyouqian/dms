@@ -15,7 +15,7 @@ namespace {
         bool isLogin;
         std::vector<Rank> ranks;
         lw::HTTPClient* pHttpClient;
-        std::vector<int> gameIds;
+        int appId;
     };
     
     Data* _pd = NULL;
@@ -53,7 +53,6 @@ namespace {
             cJSON_Delete(json);
         }
     };
-
     
     class MsgLogout : public lw::HTTPMsg{
     public:
@@ -90,13 +89,66 @@ namespace {
         }
     };
     
+    class MsgGetTodayGames : public lw::HTTPMsg{
+    public:
+        MsgGetTodayGames()
+        :lw::HTTPMsg("/dmsapi/user/gettodaygames", _pd->pHttpClient, false){
+            std::stringstream ss;
+            ss << "?appid=" << _pd->appId;
+            addParam(ss.str().c_str());
+        }
+        virtual void onRespond(){
+            
+        }
+    };
+    
+    class MsgStartGame : public lw::HTTPMsg{
+    public:
+        MsgStartGame(int gameid)
+        :lw::HTTPMsg("/dmsapi/user/startgame", _pd->pHttpClient, false){
+            std::stringstream ss;
+            ss << "?gameid=" << gameid;
+            addParam(ss.str().c_str());
+        }
+        virtual void onRespond(){
+            
+        }
+    };
+    
+    class MsgSubmitScore : public lw::HTTPMsg{
+    public:
+        MsgSubmitScore(int gameid, int score)
+        :lw::HTTPMsg("/dmsapi/user/submitscore", _pd->pHttpClient, false){
+            std::stringstream ss;
+            ss << "?gameid=" << gameid << "&score=" << score;
+            addParam(ss.str().c_str());
+        }
+        virtual void onRespond(){
+            
+        }
+    };
+    
+    class MsgGetTimeline : public lw::HTTPMsg{
+    public:
+        MsgGetTimeline(int offset)
+        :lw::HTTPMsg("/dmsapi/user/gettimeline", _pd->pHttpClient, false){
+            std::stringstream ss;
+            ss << "?offset=" << offset;
+            addParam(ss.str().c_str());
+        }
+        virtual void onRespond(){
+            
+        }
+    };
+    
 }//namespace
 
-void dmsInit(){
+void dmsInit(int appid){
     lwassert(_pd==NULL);
     _pd = new Data;
     _pd->pHttpClient = new lw::HTTPClient("127.0.0.1:8000");
     _pd->pHttpClient->enableHTTPS(false);
+    _pd->appId = appid;
 }
 
 void dmsDestroy(){
@@ -106,9 +158,8 @@ void dmsDestroy(){
     _pd = NULL;
 }
 
-void dmsAddGame(int gameid){
-    lwassert(_pd);
-    _pd->gameIds.push_back(gameid);
+void dmsMain(){
+    
 }
 
 void dmsLogin(const char* gcid){
@@ -131,17 +182,25 @@ void dmsHeartBeat(){
 }
 
 void dmsGetTodayGames(){
-    
+    lwassert(_pd);
+    lw::HTTPMsg* pMsg = new MsgGetTodayGames();
+    pMsg->send();
 }
 
 void dmsStartGame(int gameid){
-    
+    lwassert(_pd);
+    lw::HTTPMsg* pMsg = new MsgStartGame(gameid);
+    pMsg->send();
 }
 
 void dmsSubmitScore(int gameid, int score){
-    
+    lwassert(_pd);
+    lw::HTTPMsg* pMsg = new MsgSubmitScore(gameid, score);
+    pMsg->send();
 }
 
 void dmsGetTimeline(int offset){
-    
+    lwassert(_pd);
+    lw::HTTPMsg* pMsg = new MsgGetTimeline(offset);
+    pMsg->send();
 }

@@ -3,9 +3,9 @@
 
 #define SECRET_KEY "480b4cf23ec84a1b93ab159f4938a3e5"
 
-void dmsInit();
+void dmsInit(int appid);
 void dmsDestroy();
-void dmsAddGame(int gameid);
+void dmsMain();
 
 void dmsLogin(const char* gcid);
 void dmsLogout();

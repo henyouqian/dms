@@ -5,6 +5,11 @@ $(document).ready(function(){
     $('#register').click(function() {
         register();
     });
+    $("#pw").keypress(function(event) {
+        if ( event.which == 13 ) {
+            login();
+        }
+    });
     $('button').button();
 });
 
