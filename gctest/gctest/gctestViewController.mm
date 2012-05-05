@@ -25,6 +25,10 @@
     dmsGetTodayGames();
 }
 
+-(IBAction)onStartGames:(id)sender{
+    dmsStartGame(1);
+}
+
 - (void)dealloc
 {
     [super dealloc];

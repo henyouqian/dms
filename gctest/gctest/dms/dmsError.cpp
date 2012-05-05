@@ -3,8 +3,8 @@
 const char* getDmsErrorString(int error){
     if ( error == DMSERR_NONE ){
         return "DMSERR_NONE";
-    }else if ( error == DMSERR_SERVERDATA ){
-        return "DMSERR_SERVERDATA";
+    }else if ( error == DMSERR_JSON ){
+        return "DMSERR_JSON";
     }else if ( error == DMSERR_OTHER ){
         return "DMSERR_OTHER";
     }else if ( error == DMSERR_PARAM ){

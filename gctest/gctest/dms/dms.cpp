@@ -16,9 +16,51 @@ namespace {
         std::vector<Rank> ranks;
         lw::HTTPClient* pHttpClient;
         int appId;
+        DmsCallback* pCallback;
+        std::string gameStartToken;
     };
     
     Data* _pd = NULL;
+    
+    cJSON* parseMsg(const char* strMsg, int& error){
+        error = DMSERR_NONE;
+        cJSON *json=cJSON_Parse(strMsg);
+        if ( !json ){
+            error = DMSERR_JSON;
+        }else{
+            cJSON *jerror = cJSON_GetObjectItem(json, "error");
+            if ( jerror && jerror->valueint){
+                error = jerror->valueint;
+            }
+        }
+        return json;
+    }
+    int getJsonInt(cJSON* json, const char* key, int& error){
+        cJSON* jint=cJSON_GetObjectItem(json, key);
+        if ( !jint ){
+            error = DMSERR_JSON;
+        }else{
+            if ( jint->type == cJSON_Number ){
+                return jint->valueint;
+            }else{
+                error = DMSERR_JSON;
+            }
+        }
+        return 0;
+    }
+    const char* getJsonString(cJSON* json, const char* key, int& error){
+        cJSON* jint=cJSON_GetObjectItem(json, key);
+        if ( !jint ){
+            error = DMSERR_JSON;
+        }else{
+            if ( jint->type == cJSON_String ){
+                return jint->valuestring;
+            }else{
+                error = DMSERR_JSON;
+            }
+        }
+        return NULL;
+    }
     
     class MsgLogin : public lw::HTTPMsg{
     public:
@@ -30,24 +72,13 @@ namespace {
         }
         virtual void onRespond(){
             int error = DMSERR_NONE;
-            const char* s = _buff.c_str();
+            cJSON *json=parseMsg(_buff.c_str(), error);
             const char* gcid = NULL;
-            cJSON *json=cJSON_Parse(s);
-            if ( !json ){
-                error = DMSERR_SERVERDATA;
-            }else{
-                cJSON *jerror = cJSON_GetObjectItem(json, "error");
-                if ( jerror && jerror->valueint){
-                    error = jerror->valueint;
-                }else{
-                    cJSON* jgcid=cJSON_GetObjectItem(json, "gcid");
-                    if ( !jgcid ){
-                        error = DMSERR_SERVERDATA;
-                    }else{
-                        gcid = jgcid->valuestring;
-                        _pd->isLogin = true;
-                    }
-                }
+            if ( error == DMSERR_NONE ){
+                gcid = getJsonString(json, "gcid", error);
+            }
+            if ( error == DMSERR_NONE ){
+                _pd->isLogin = true;
             }
             onLogin(error, gcid);
             cJSON_Delete(json);
@@ -74,16 +105,7 @@ namespace {
         }
         virtual void onRespond(){
             int error = DMSERR_NONE;
-            const char* s = _buff.c_str();
-            cJSON *json=cJSON_Parse(s);
-            if ( !json ){
-                error = DMSERR_SERVERDATA;
-            }else{
-                cJSON *jerror = cJSON_GetObjectItem(json, "error");
-                if ( jerror && jerror->valueint){
-                    error = jerror->valueint;
-                }
-            }
+            cJSON *json=parseMsg(_buff.c_str(), error);
             onHeartBeat(error);
             cJSON_Delete(json);
         }
@@ -111,7 +133,14 @@ namespace {
             addParam(ss.str().c_str());
         }
         virtual void onRespond(){
-            
+            int error = DMSERR_NONE;
+            cJSON *json=parseMsg(_buff.c_str(), error);
+            const char* token = NULL;
+            if ( error == DMSERR_NONE ){
+                token = getJsonString(json, "token", error);
+            }
+            onStartGame(error, token);
+            cJSON_Delete(json);
         }
     };
     
@@ -120,11 +149,20 @@ namespace {
         MsgSubmitScore(int gameid, int score)
         :lw::HTTPMsg("/dmsapi/user/submitscore", _pd->pHttpClient, false){
             std::stringstream ss;
-            ss << "?gameid=" << gameid << "&score=" << score;
+            ss << "?token=" << _pd->gameStartToken << "&gameid=" << gameid << "&score=" << score;
             addParam(ss.str().c_str());
         }
         virtual void onRespond(){
-            
+            int error = DMSERR_NONE;
+            cJSON *json=parseMsg(_buff.c_str(), error);
+            int gameid = -1;
+            int score = 0;
+            if ( error == DMSERR_NONE ){
+                gameid = getJsonInt(json, "gameid", error);
+                score = getJsonInt(json, "score", error);
+            }
+            onSubmitScore(error, gameid, score);
+            cJSON_Delete(json);
         }
     };
     
@@ -149,6 +187,7 @@ void dmsInit(int appid){
     _pd->pHttpClient = new lw::HTTPClient("127.0.0.1:8000");
     _pd->pHttpClient->enableHTTPS(false);
     _pd->appId = appid;
+    _pd->pCallback = NULL;
 }
 
 void dmsDestroy(){
@@ -160,6 +199,11 @@ void dmsDestroy(){
 
 void dmsMain(){
     
+}
+
+void dmsSetCallback(DmsCallback* pCallback){
+    lwassert(_pd);
+    _pd->pCallback = pCallback;
 }
 
 void dmsLogin(const char* gcid){
@@ -203,4 +247,41 @@ void dmsGetTimeline(int offset){
     lwassert(_pd);
     lw::HTTPMsg* pMsg = new MsgGetTimeline(offset);
     pMsg->send();
+}
+
+void onLogin(int error, const char* gcid){
+    if ( error ){
+        lwerror(getDmsErrorString(error));
+    }else{
+        lwinfo("login:" << gcid);
+    }
+}
+
+void onLogout(){
+    lwinfo("logout");
+}
+
+void onHeartBeat(int error){
+    if ( error ){
+        lwerror(getDmsErrorString(error));
+    }else{
+        lwinfo("heart beat");
+    }
+}
+
+void onStartGame(int error, const char* token){
+    if ( error ){
+        lwerror(getDmsErrorString(error));
+    }else{
+        _pd->gameStartToken = token;
+        lwinfo("start game:" << token);
+    }
+}
+
+void onSubmitScore(int error, int gameid, int score){
+    if ( error ){
+        lwerror(getDmsErrorString(error));
+    }else{
+        lwinfo("submit score: gameid=" << gameid << " score=" << score);
+    }
 }

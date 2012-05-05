@@ -17,7 +17,6 @@
 		D01A55CF14BC2D3F00D8A7EF /* gctestViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D01A55CE14BC2D3F00D8A7EF /* gctestViewController.mm */; };
 		D01A55D214BC2D3F00D8A7EF /* gctestViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D01A55D014BC2D3F00D8A7EF /* gctestViewController.xib */; };
 		D01A55D914BC324700D8A7EF /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D01A55D814BC324700D8A7EF /* GameKit.framework */; };
-		D0610A4414BEC72B000550A0 /* dmsResponse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0610A4314BEC72B000550A0 /* dmsResponse.cpp */; };
 		D088B3D0154862B600EF638C /* dmsError.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D088B3CF154862B600EF638C /* dmsError.cpp */; };
 		D0F2BB8714BD572F009CE7EA /* cJSON.c in Sources */ = {isa = PBXBuildFile; fileRef = D0F2BB7C14BD572F009CE7EA /* cJSON.c */; };
 		D0F2BB8814BD572F009CE7EA /* dms.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0F2BB7F14BD572F009CE7EA /* dms.cpp */; };
@@ -41,7 +40,6 @@
 		D01A55CE14BC2D3F00D8A7EF /* gctestViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = gctestViewController.mm; sourceTree = "<group>"; };
 		D01A55D114BC2D3F00D8A7EF /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/gctestViewController.xib; sourceTree = "<group>"; };
 		D01A55D814BC324700D8A7EF /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
-		D0610A4314BEC72B000550A0 /* dmsResponse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dmsResponse.cpp; sourceTree = "<group>"; };
 		D088B3CD15485F3700EF638C /* dmsError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dmsError.h; sourceTree = "<group>"; };
 		D088B3CF154862B600EF638C /* dmsError.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dmsError.cpp; sourceTree = "<group>"; };
 		D0F2BB7C14BD572F009CE7EA /* cJSON.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cJSON.c; sourceTree = "<group>"; };
@@ -146,7 +144,6 @@
 				D0F2BB8C14BD57D8009CE7EA /* dmsPreinclude.h */,
 				D0F2BB8014BD572F009CE7EA /* dms.h */,
 				D0F2BB7F14BD572F009CE7EA /* dms.cpp */,
-				D0610A4314BEC72B000550A0 /* dmsResponse.cpp */,
 				D0F2BB8314BD572F009CE7EA /* lwHTTPClient.h */,
 				D0F2BB8414BD572F009CE7EA /* lwHTTPClient.mm */,
 				D0F2BB8514BD572F009CE7EA /* lwLog.h */,
@@ -225,7 +222,6 @@
 				D0F2BB8814BD572F009CE7EA /* dms.cpp in Sources */,
 				D0F2BB8A14BD572F009CE7EA /* lwHTTPClient.mm in Sources */,
 				D0F2BBA114BD6016009CE7EA /* lwUtil.mm in Sources */,
-				D0610A4414BEC72B000550A0 /* dmsResponse.cpp in Sources */,
 				D088B3D0154862B600EF638C /* dmsError.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

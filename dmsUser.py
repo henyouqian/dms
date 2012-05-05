@@ -5,9 +5,11 @@ import hashlib
 import uuid
 from dmsError import *
 import dmsConfig
+import datetime
 
 HEART_BEET_SECOND = 600
 CACHE_KEEP_SECOND = HEART_BEET_SECOND + 60
+GAME_KEEP_SECOND = 600+20
 
 userBluePrint = Blueprint('user', __name__)
 
@@ -85,13 +87,53 @@ def usergettodaygames():
     if (not userisLogin()):
         return jsonify(error=DMSERR_LOGIN)
     appid = request.args.get('appid', type=int)
-    rows = g.db.iter('SELECT g.game_id, s.score, s.time FROM Games AS g INNER JOIN Scores AS s on g.game_id=s.game_id  WHERE g.app_id=%s AND g.developer_id=%s AND s.date=UTC_DATE() AND s.user_id=%s', appid, g.developerid, g.userid)
+    if ( appid==None ):
+        return jsonify(error=DMSERR_PARAM)
+    #rows = g.db.iter('SELECT g.game_id, s.score, s.time FROM Games AS g Left OUTER JOIN Scores AS s on g.game_id=s.game_id  WHERE g.app_id=%s AND g.developer_id=%s AND s.date=UTC_DATE() AND s.user_id=%s', appid, g.developerid, g.userid)
+    rows = g.db.iter('SELECT g.game_id, s.score, s.time FROM Games AS g INNER JOIN Scores AS s on g.game_id=s.game_id AND s.date=UTC_DATE() AND s.user_id=%s AND g.app_id=%s AND g.developer_id=%s', g.userid, appid, g.developerid)
     print 'xxxxxxxxxxxxxxxxxxx'
+    data = [{'gameid':row['g.game_id'], 'score':row['s.score'], 'time':str(row['s.time'])} for row in rows]
     for row in rows:
         print row;
+        
     print 'yyyyyyyyyyyyyyyyyyy'
-    return jsonify(error=DMSERR_NONE)
+    return jsonify(error=DMSERR_NONE, data=data)
 
+@userBluePrint.route('/dmsapi/user/startgame')
+def userstartgame():
+    if (not userisLogin()):
+        return jsonify(error=DMSERR_LOGIN)
+    gameid = request.args.get('gameid', type=int)
+    if ( gameid==None ):
+        return jsonify(error=DMSERR_PARAM)
+    row = g.db.get('SELECT score FROM Scores WHERE user_id=%s AND game_id=%s AND date=UTC_DATE()', g.userid, gameid)
+    if row == None:
+        g.db.execute('INSERT INTO Scores (user_id, game_id, date, time, score) VALUES (%s, %s, UTC_DATE(), UTC_TIME(), 0)', g.userid, gameid)
+        key = uuid.uuid4().hex
+        value = gameid
+        g.mc.set(key, value, GAME_KEEP_SECOND)
+        return jsonify(error=DMSERR_NONE, token=key)
+    else:
+        return jsonify(error=DMSERR_EXIST)
+    
+@userBluePrint.route('/dmsapi/user/submitscore')
+def usersubmitscore():
+    if (not userisLogin()):
+        return jsonify(error=DMSERR_LOGIN)
+    token = request.args.get('token', type=unicode)
+    gameid = request.args.get('gameid', type=int)
+    score = request.args.get('score', type=int)
+    if ( token==None or gameid==None or score==None ):
+        return jsonify(error=DMSERR_PARAM)
+    mcgameid = g.mc.get(token)
+    if data == None:
+        return jsonify(error=DMSERR_EXIST)
+    else:
+        if gameid != mcgameid:
+            return jsonify(error=DMSERR_NOTMATCH)
+        else:
+            g.db.execute('REPLACE INTO Scores (user_id, game_id, date, time, score) values(%s, %s, UTC_DATE(), UTC_TIME(), %s)', g.user_id, gameid, score)
+            return jsonify(error=DMSERR_NONE, gameid=gameid, score=score)
     
 ###match
 @userBluePrint.route('/dmsapi/user/gettodaymatches')

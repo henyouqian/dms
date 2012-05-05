@@ -16,5 +16,6 @@
 -(IBAction)onLogout:(id)sender;
 -(IBAction)onHeart:(id)sender;
 -(IBAction)onGetTodayGames:(id)sender;
+-(IBAction)onStartGames:(id)sender;
 
 @end

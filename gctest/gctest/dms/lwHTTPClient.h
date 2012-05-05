@@ -12,6 +12,7 @@ namespace lw{
         void addParam(const char* param);
 		void send();
 		virtual void onRespond(){}
+        virtual void onError(){}
 		HTTPClient* getClient(){
 			return _pClient;
 		}
