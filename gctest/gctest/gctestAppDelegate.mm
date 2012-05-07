@@ -25,6 +25,7 @@
     [self.window makeKeyAndVisible];
     
     dmsInit(1);
+    [self.viewController setCallback];
 
     GKLocalPlayer *localPlayer = [GKLocalPlayer localPlayer];
     [localPlayer authenticateWithCompletionHandler:^(NSError *error) {

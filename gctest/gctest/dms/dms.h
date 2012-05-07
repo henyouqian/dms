@@ -15,7 +15,7 @@ void dmsLogout();
 void dmsHeartBeat();
 void dmsGetTodayGames();
 void dmsStartGame(int gameid);
-void dmsSubmitScore(int gameid, int score);
+bool dmsSubmitScore(int gameid, int score);
 void dmsGetTimeline(int offset);
 
 struct Rank{
@@ -32,7 +32,7 @@ public:
     virtual void onLogout() {};
     virtual void onHeartBeat(int error) {};
     virtual void onGetTodayGames(int error) {};
-    virtual void onStartGame(int error, int gameid){}
+    virtual void onStartGame(int error, int gameid) {};
     virtual void onSubmitScore(int error, int gameid, int score) {};
     
 };
@@ -40,7 +40,7 @@ public:
 void onLogin(int error, const char* gcid);
 void onLogout();
 void onHeartBeat(int error);
-void onStartGame(int error, const char* token);
+void onStartGame(int error, const char* token, int gameid);
 void onSubmitScore(int error, int gameid, int score);
 
 

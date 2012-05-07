@@ -8,8 +8,86 @@
 
 #import "gctestViewController.h"
 #include "dms.h"
+#include "dmsError.h"
+
+void MyDmsCallback::onLogin(int error, const char* gcid){
+    NSString* str = nil;
+    if ( error ){
+        str = [[NSString alloc] initWithFormat:@"onLogin:error=%s", getDmsErrorString(error)];
+    }else{
+        str = [[NSString alloc] initWithFormat:@"onLogin:gcid=%s", gcid];
+    }
+    _pLabel.text = str;
+    [str release];
+}
+
+void MyDmsCallback::onLogout(){
+   _pLabel.text = @"onLogout";
+}
+
+void MyDmsCallback::onHeartBeat(int error){
+    NSString* str = nil;
+    if ( error ){
+        str = [[NSString alloc] initWithFormat:@"onHeartBeat:error=%s", getDmsErrorString(error)];
+    }else{
+        str = @"onHeartBeat";
+    }
+    _pLabel.text = str;
+    [str release];
+}
+
+void MyDmsCallback::onGetTodayGames(int error){
+    NSString* str = nil;
+    if ( error ){
+        str = [[NSString alloc] initWithFormat:@"onGetTodayGames:error=%s", getDmsErrorString(error)];
+    }else{
+        str = [[NSString alloc] initWithFormat:@"onGetTodayGames"];
+    }
+    _pLabel.text = str;
+    [str release];
+}
+
+void MyDmsCallback::onStartGame(int error, int gameid){
+    NSString* str = nil;
+    if ( error ){
+        str = [[NSString alloc] initWithFormat:@"onStartGame:error=%s", getDmsErrorString(error)];
+    }else{
+        str = [[NSString alloc] initWithFormat:@"onStartGame:gameid=%d", gameid];
+    }
+    _pLabel.text = str;
+    [str release];
+}
+
+void MyDmsCallback::onSubmitScore(int error, int gameid, int score){
+    NSString* str = nil;
+    if ( error ){
+        str = [[NSString alloc] initWithFormat:@"onSubmitScore:error=%s", getDmsErrorString(error)];
+    }else{
+        str = [[NSString alloc] initWithFormat:@"onSubmitScore:gameid=%d,score=%d", gameid, score];
+    }
+    _pLabel.text = str;
+    [str release];
+}
+
 
 @implementation gctestViewController
+
+@synthesize tfFakeLogin;
+@synthesize tfStartGameID;
+@synthesize tfSubmitGameID;
+@synthesize lbOutput;
+
+-(void)setCallback{
+    _pDmsCallback = new MyDmsCallback(lbOutput);
+    dmsSetCallback(_pDmsCallback);
+}
+
+-(void)dealloc {
+    if ( _pDmsCallback ){
+        delete _pDmsCallback;
+    }
+    [super dealloc];
+}
 
 -(IBAction)onLogin:(id)sender{
     GKLocalPlayer *localPlayer = [GKLocalPlayer localPlayer];
@@ -26,12 +104,25 @@
 }
 
 -(IBAction)onStartGames:(id)sender{
-    dmsStartGame(1);
+    dmsStartGame([[tfStartGameID text] intValue]);
 }
 
-- (void)dealloc
-{
-    [super dealloc];
+-(IBAction)onSubmitScore:(id)sender{
+    dmsSubmitScore([[tfStartGameID text] intValue], [[tfSubmitGameID text] intValue]);
+}
+
+-(IBAction)onSubmitScoreRandom:(id)sender{
+    dmsSubmitScore([[tfStartGameID text] intValue], rand()%1000);
+}
+
+-(IBAction)onFakeLogin:(id)sender{
+    dmsLogin([[tfFakeLogin text] UTF8String]);
+}
+
+-(IBAction)onBGTap:(id)sender{
+    [tfFakeLogin resignFirstResponder];
+    [tfStartGameID resignFirstResponder];
+    [tfSubmitGameID resignFirstResponder];
 }
 
 - (void)didReceiveMemoryWarning

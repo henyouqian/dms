@@ -106,6 +106,9 @@ def userstartgame():
     gameid = request.args.get('gameid', type=int)
     if ( gameid==None ):
         return jsonify(error=DMSERR_PARAM)
+    row = g.db.get('SELECT game_id FROM Games WHERE game_id=%s AND developer_id=%s', gameid, g.developerid)
+    if row == None:
+        return jsonify(error=DMSERR_NOTMATCH)
     row = g.db.get('SELECT score FROM Scores WHERE user_id=%s AND game_id=%s AND date=UTC_DATE()', g.userid, gameid)
     if row == None:
         g.db.execute('INSERT INTO Scores (user_id, game_id, date, time, score) VALUES (%s, %s, UTC_DATE(), UTC_TIME(), 0)', g.userid, gameid)
@@ -123,16 +126,18 @@ def usersubmitscore():
     token = request.args.get('token', type=unicode)
     gameid = request.args.get('gameid', type=int)
     score = request.args.get('score', type=int)
-    if ( token==None or gameid==None or score==None ):
+    if ( token==None or token =='' or gameid==None or score==None ):
         return jsonify(error=DMSERR_PARAM)
+    token = token.encode('utf8')
     mcgameid = g.mc.get(token)
-    if data == None:
+    if mcgameid == None:
         return jsonify(error=DMSERR_EXIST)
     else:
+        g.mc.delete(token);
         if gameid != mcgameid:
             return jsonify(error=DMSERR_NOTMATCH)
         else:
-            g.db.execute('REPLACE INTO Scores (user_id, game_id, date, time, score) values(%s, %s, UTC_DATE(), UTC_TIME(), %s)', g.user_id, gameid, score)
+            g.db.execute('REPLACE INTO Scores (user_id, game_id, date, time, score) values(%s, %s, UTC_DATE(), UTC_TIME(), %s)', g.userid, gameid, score)
             return jsonify(error=DMSERR_NONE, gameid=gameid, score=score)
     
 ###match

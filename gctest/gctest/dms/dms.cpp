@@ -78,6 +78,7 @@ namespace {
                 gcid = getJsonString(json, "gcid", error);
             }
             if ( error == DMSERR_NONE ){
+                _pd->gcid = gcid;
                 _pd->isLogin = true;
             }
             onLogin(error, gcid);
@@ -127,7 +128,7 @@ namespace {
     class MsgStartGame : public lw::HTTPMsg{
     public:
         MsgStartGame(int gameid)
-        :lw::HTTPMsg("/dmsapi/user/startgame", _pd->pHttpClient, false){
+        :lw::HTTPMsg("/dmsapi/user/startgame", _pd->pHttpClient, false), _gameID(gameid){
             std::stringstream ss;
             ss << "?gameid=" << gameid;
             addParam(ss.str().c_str());
@@ -139,9 +140,11 @@ namespace {
             if ( error == DMSERR_NONE ){
                 token = getJsonString(json, "token", error);
             }
-            onStartGame(error, token);
+            onStartGame(error, token, _gameID);
             cJSON_Delete(json);
         }
+    private:
+        int _gameID;
     };
     
     class MsgSubmitScore : public lw::HTTPMsg{
@@ -208,13 +211,17 @@ void dmsSetCallback(DmsCallback* pCallback){
 
 void dmsLogin(const char* gcid){
     lwassert(_pd);
-    _pd->gcid = gcid;
+    _pd->gcid.clear();
+    _pd->gameStartToken.clear();
     lw::HTTPMsg* pMsg = new MsgLogin(gcid);
     pMsg->send();
 }
 
 void dmsLogout(){
     lwassert(_pd);
+    _pd->gcid.clear();
+    _pd->isLogin = false;
+    _pd->gameStartToken.clear();
     lw::HTTPMsg* pMsg = new MsgLogout();
     pMsg->send();
 }
@@ -237,10 +244,15 @@ void dmsStartGame(int gameid){
     pMsg->send();
 }
 
-void dmsSubmitScore(int gameid, int score){
+bool dmsSubmitScore(int gameid, int score){
     lwassert(_pd);
+    if ( _pd->gameStartToken.empty() ){
+        lwerror("dmsStartGame first");
+        return false;
+    }
     lw::HTTPMsg* pMsg = new MsgSubmitScore(gameid, score);
     pMsg->send();
+    return true;
 }
 
 void dmsGetTimeline(int offset){
@@ -255,10 +267,16 @@ void onLogin(int error, const char* gcid){
     }else{
         lwinfo("login:" << gcid);
     }
+    if ( _pd->pCallback ){
+        _pd->pCallback->onLogin(error, gcid);
+    }
 }
 
 void onLogout(){
     lwinfo("logout");
+    if ( _pd->pCallback ){
+        _pd->pCallback->onLogout();
+    }
 }
 
 void onHeartBeat(int error){
@@ -267,14 +285,20 @@ void onHeartBeat(int error){
     }else{
         lwinfo("heart beat");
     }
+    if ( _pd->pCallback ){
+        _pd->pCallback->onHeartBeat(error);
+    }
 }
 
-void onStartGame(int error, const char* token){
+void onStartGame(int error, const char* token, int gameid){
     if ( error ){
         lwerror(getDmsErrorString(error));
     }else{
         _pd->gameStartToken = token;
         lwinfo("start game:" << token);
+    }
+    if ( _pd->pCallback ){
+        _pd->pCallback->onStartGame(error, gameid);
     }
 }
 
@@ -283,5 +307,8 @@ void onSubmitScore(int error, int gameid, int score){
         lwerror(getDmsErrorString(error));
     }else{
         lwinfo("submit score: gameid=" << gameid << " score=" << score);
+    }
+    if ( _pd->pCallback ){
+        _pd->pCallback->onSubmitScore(error, gameid, score);
     }
 }
