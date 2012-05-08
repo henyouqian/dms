@@ -10,7 +10,7 @@ void dmsDestroy();
 void dmsMain();
 void dmsSetCallback(DmsCallback* pCallback);
 
-void dmsLogin(const char* gcid);
+void dmsLogin(const char* gcid, const char* username);
 void dmsLogout();
 void dmsHeartBeat();
 void dmsGetTodayGames();
@@ -26,20 +26,28 @@ struct Rank{
     std::string userName;
 };
 
+struct DmsGame{
+    int gameid;
+    int score;
+    std::string time;
+};
+
 class DmsCallback{
 public:
-    virtual void onLogin(int error, const char* gcid) {};
+    virtual void onError(const char* error) {};
+    virtual void onLogin(int error, const char* gcid, const char* datetime) {};
     virtual void onLogout() {};
     virtual void onHeartBeat(int error) {};
-    virtual void onGetTodayGames(int error) {};
+    virtual void onGetTodayGames(int error, const std::vector<DmsGame>& games) {};
     virtual void onStartGame(int error, int gameid) {};
     virtual void onSubmitScore(int error, int gameid, int score) {};
     
 };
 
-void onLogin(int error, const char* gcid);
+void onLogin(int error, const char* gcid, const char* datetime);
 void onLogout();
 void onHeartBeat(int error);
+void onGetTodayGames(int error, const std::vector<DmsGame>& games);
 void onStartGame(int error, const char* token, int gameid);
 void onSubmitScore(int error, int gameid, int score);
 

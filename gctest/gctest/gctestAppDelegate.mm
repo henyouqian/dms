@@ -33,7 +33,7 @@
         {
             NSLog(@"%@ %@", localPlayer.playerID, localPlayer.alias);
             
-            dmsLogin([localPlayer.playerID UTF8String]);
+            dmsLogin([localPlayer.playerID UTF8String], [localPlayer.alias UTF8String]);
         }
     }];
     

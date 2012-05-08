@@ -51,18 +51,22 @@ def userheartbeat():
 def userlogin():
     gcid = request.args.get('gcid', type=unicode)
     secretkey = request.args.get('secretkey', type=unicode)
-    if ( gcid==None or secretkey==None ):
+    username = request.args.get('username', type=unicode)
+    if ( gcid==None or secretkey==None or username==None or username=='' ):
         return jsonify(error=DMSERR_PARAM)
     if userisLogin():
         token = session['usertoken']
         g.mc.delete(token)
     session.clear()
     accountdb = connectAccountDb()
-    row = accountdb.get('SELECT user_id FROM Users WHERE gamecenter_id=%s', gcid)
+    row = accountdb.get('SELECT user_id, name FROM Users WHERE gamecenter_id=%s', gcid)
     if (row == None):
-        accountdb.execute('INSERT INTO Users (gamecenter_id) VALUES(%s)', gcid)
-        row = accountdb.get('SELECT user_id FROM Users WHERE gamecenter_id=%s', gcid)
+        accountdb.execute('INSERT INTO Users (gamecenter_id, name) VALUES(%s, %s)', gcid, name)
+        row = accountdb.get('SELECT user_id, name FROM Users WHERE gamecenter_id=%s', gcid)
     userid=row['user_id']
+    usernameindb = row['name']
+    if ( username != usernameindb ):
+        accountdb.execute('UPDATE Users SET name=%s WHERE gamecenter_id=%s', username, gcid)
     row = accountdb.get('SELECT developer_id FROM Developers WHERE secret_key=%s', secretkey)
     if ( row == None ):
         return jsonify(error=DMSERR_SECRET)
@@ -71,7 +75,7 @@ def userlogin():
     session['usertoken'] = token
     cachedata = [userid, developerid]
     g.mc.set(token, cachedata, CACHE_KEEP_SECOND)
-    return jsonify(error=DMSERR_NONE, gcid=gcid)
+    return jsonify(error=DMSERR_NONE, gcid=gcid, time=str(datetime.datetime.utcnow()))
 
 @userBluePrint.route('/dmsapi/user/logout')
 def userlogout():
@@ -91,13 +95,8 @@ def usergettodaygames():
         return jsonify(error=DMSERR_PARAM)
     #rows = g.db.iter('SELECT g.game_id, s.score, s.time FROM Games AS g Left OUTER JOIN Scores AS s on g.game_id=s.game_id  WHERE g.app_id=%s AND g.developer_id=%s AND s.date=UTC_DATE() AND s.user_id=%s', appid, g.developerid, g.userid)
     rows = g.db.iter('SELECT g.game_id, s.score, s.time FROM Games AS g INNER JOIN Scores AS s on g.game_id=s.game_id AND s.date=UTC_DATE() AND s.user_id=%s AND g.app_id=%s AND g.developer_id=%s', g.userid, appid, g.developerid)
-    print 'xxxxxxxxxxxxxxxxxxx'
-    data = [{'gameid':row['g.game_id'], 'score':row['s.score'], 'time':str(row['s.time'])} for row in rows]
-    for row in rows:
-        print row;
-        
-    print 'yyyyyyyyyyyyyyyyyyy'
-    return jsonify(error=DMSERR_NONE, data=data)
+    games = [{'gameid':row['game_id'], 'score':row['score'], 'time':str(row['time'])} for row in rows]
+    return jsonify(error=DMSERR_NONE, games=games)
 
 @userBluePrint.route('/dmsapi/user/startgame')
 def userstartgame():

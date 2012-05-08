@@ -18,6 +18,7 @@
 		D01A55D214BC2D3F00D8A7EF /* gctestViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D01A55D014BC2D3F00D8A7EF /* gctestViewController.xib */; };
 		D01A55D914BC324700D8A7EF /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D01A55D814BC324700D8A7EF /* GameKit.framework */; };
 		D05592B515578D510015F543 /* dmsTestFunc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D05592B315578D510015F543 /* dmsTestFunc.cpp */; };
+		D05592C31559585D0015F543 /* logger.mm in Sources */ = {isa = PBXBuildFile; fileRef = D05592C21559585D0015F543 /* logger.mm */; };
 		D088B3D0154862B600EF638C /* dmsError.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D088B3CF154862B600EF638C /* dmsError.cpp */; };
 		D0F2BB8714BD572F009CE7EA /* cJSON.c in Sources */ = {isa = PBXBuildFile; fileRef = D0F2BB7C14BD572F009CE7EA /* cJSON.c */; };
 		D0F2BB8814BD572F009CE7EA /* dms.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0F2BB7F14BD572F009CE7EA /* dms.cpp */; };
@@ -43,6 +44,8 @@
 		D01A55D814BC324700D8A7EF /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		D05592B315578D510015F543 /* dmsTestFunc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dmsTestFunc.cpp; sourceTree = "<group>"; };
 		D05592B415578D510015F543 /* dmsTestFunc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dmsTestFunc.h; sourceTree = "<group>"; };
+		D05592C11559585D0015F543 /* logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
+		D05592C21559585D0015F543 /* logger.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = logger.mm; sourceTree = "<group>"; };
 		D088B3CD15485F3700EF638C /* dmsError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dmsError.h; sourceTree = "<group>"; };
 		D088B3CF154862B600EF638C /* dmsError.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dmsError.cpp; sourceTree = "<group>"; };
 		D0F2BB7C14BD572F009CE7EA /* cJSON.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cJSON.c; sourceTree = "<group>"; };
@@ -109,6 +112,8 @@
 				D01A55C714BC2D3F00D8A7EF /* gctestAppDelegate.h */,
 				D01A55C814BC2D3F00D8A7EF /* gctestAppDelegate.mm */,
 				D01A55CA14BC2D3F00D8A7EF /* MainWindow.xib */,
+				D05592C11559585D0015F543 /* logger.h */,
+				D05592C21559585D0015F543 /* logger.mm */,
 				D01A55CD14BC2D3F00D8A7EF /* gctestViewController.h */,
 				D01A55CE14BC2D3F00D8A7EF /* gctestViewController.mm */,
 				D01A55D014BC2D3F00D8A7EF /* gctestViewController.xib */,
@@ -229,6 +234,7 @@
 				D0F2BBA114BD6016009CE7EA /* lwUtil.mm in Sources */,
 				D088B3D0154862B600EF638C /* dmsError.cpp in Sources */,
 				D05592B515578D510015F543 /* dmsTestFunc.cpp in Sources */,
+				D05592C31559585D0015F543 /* logger.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
