@@ -1,89 +1,87 @@
 #include "logger.h"
 #include "dms.h"
 #include "dmsError.h"
+#include "lwUtil.h"
 
 Logger::Logger(UITextView* pTextView):_pTextView(pTextView){
     _str = [[NSMutableString alloc] init];
+    lw::srand();
 }
 
 Logger::~Logger(){
     [_str release];
 }
 
-void Logger::onError(const char* text){
-    NSString* str = [[NSString alloc] initWithUTF8String:text];
-    [_str insertString:str atIndex:0];
+void Logger::addLog(const char* log){
+    std::string str = "+";
+    str.append(log);
+    str.append("\n");
+    [_str insertString:[NSString stringWithUTF8String:str.c_str()] atIndex:0];
     _pTextView.text = _str;
-    [str release];
+}
+
+void Logger::onError(const char* text){
+    std::string str = "onError:";
+    str.append(text);
+    addLog(str.c_str());
 }
 
 void Logger::onLogin(int error, const char* gcid, const char* datetime){
-    NSString* str = nil;
+    std::stringstream ss;
     if ( error ){
-        str = [[NSString alloc] initWithFormat:@"onLogin:error=%s\n", getDmsErrorString(error)];
+        ss << "onLogin:error=" << getDmsErrorString(error);
     }else{
-        str = [[NSString alloc] initWithFormat:@"onLogin:gcid=%s, datetime=%s\n", gcid, datetime];
+        ss << "onLogin:gcid=" << gcid << ", datatime=" << datetime;
     }
-    [_str insertString:str atIndex:0];
-    _pTextView.text = _str;
-    [str release];
+    addLog(ss.str().c_str());
 }
 
 void Logger::onLogout(){
-    [_str insertString:@"onLogout\n" atIndex:0];
-    _pTextView.text = _str;
+    addLog("onLogout");
 }
 
 void Logger::onHeartBeat(int error){
-    NSString* str = nil;
+    std::stringstream ss;
     if ( error ){
-        str = [[NSString alloc] initWithFormat:@"onHeartBeat:error=%s\n", getDmsErrorString(error)];
+        ss << "onLogin:error=" << getDmsErrorString(error);
     }else{
-        str = @"onHeartBeat\n";
+        ss << "onHeartBeat";
     }
-    [_str insertString:str atIndex:0];
-    _pTextView.text = _str;
-    [str release];
+    addLog(ss.str().c_str());
 }
 
 void Logger::onGetTodayGames(int error, const std::vector<DmsGame>& games){
-    NSMutableString* str = nil;
+    std::stringstream ss;
     if ( error ){
-        str = [[NSMutableString alloc] initWithFormat:@"onGetTodayGames:error=%s\n", getDmsErrorString(error)];
+        ss << "onGetTodayGames:error=" << getDmsErrorString(error);
     }else{
-        str = [[NSMutableString alloc] initWithFormat:@"onGetTodayGames:\n"];
+        ss << "onGetTodayGames:\n";
         std::vector<DmsGame>::const_iterator it = games.begin();
         std::vector<DmsGame>::const_iterator itend = games.end();
         for ( int i = 1; it != itend; ++it, ++i ){
-            [str appendFormat:@"  %d: id=%d, score=%d\n", i, it->gameid, it->score];
+            ss << "  " << i << ": id=" << it->gameid << ", score=" << it->score << "\n";
         }
     }
-    [_str insertString:str atIndex:0];
-    _pTextView.text = _str;
-    [str release];
+    addLog(ss.str().c_str());
 }
 
 void Logger::onStartGame(int error, int gameid){
-    NSString* str = nil;
+    std::stringstream ss;
     if ( error ){
-        str = [[NSString alloc] initWithFormat:@"onStartGame:error=%s\n", getDmsErrorString(error)];
+        ss << "onStartGame:error=" << getDmsErrorString(error);
     }else{
-        str = [[NSString alloc] initWithFormat:@"onStartGame:gameid=%d\n", gameid];
+        ss << "onStartGame:gameid=" << gameid;
     }
-    [_str insertString:str atIndex:0];
-    _pTextView.text = _str;
-    [str release];
+    addLog(ss.str().c_str());
 }
 
 void Logger::onSubmitScore(int error, int gameid, int score){
-    NSString* str = nil;
+    std::stringstream ss;
     if ( error ){
-        str = [[NSString alloc] initWithFormat:@"onSubmitScore:error=%s\n", getDmsErrorString(error)];
+        ss << "onSubmitScore:error=" << getDmsErrorString(error);
     }else{
-        str = [[NSString alloc] initWithFormat:@"onSubmitScore:gameid=%d,score=%d\n", gameid, score];
+        ss << "onSubmitScore:gameid=" << gameid << ",score=" << score;
     }
-    [_str insertString:str atIndex:0];
-    _pTextView.text = _str;
-    [str release];
+    addLog(ss.str().c_str());
 }
 

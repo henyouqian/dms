@@ -22,15 +22,15 @@ CREATE TABLE Scores (   user_id         INT UNSIGNED NOT NULL,
 
 						
 CREATE TABLE Ranks (	user_id         INT UNSIGNED NOT NULL,
-                        user_name       VARCHAR(20),
                         game_id         INT UNSIGNED NOT NULL,
                         date            DATE NOT NULL,
                         user_name       VARCHAR(20),
                         row             INT	UNSIGNED NOT NULL,
                         rank            INT	UNSIGNED NOT NULL,
                         score           INT	UNSIGNED NOT NULL,
-                        nationality     SMALLINT,
                         time            TIME	NOT NULL,
+                        user_name       VARCHAR(20),
+                        nationality     SMALLINT,
 						UNIQUE KEY uk_user_date_game (user_id, date, game_id)
 						)ENGINE = InnoDB;
 

@@ -17,6 +17,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D04F4721155AFF220097DA0B /* rank.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = rank.py; sourceTree = "<group>"; };
 		D088B3A21547D11300EF638C /* dms.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = dms.sql; sourceTree = "<group>"; };
 		D088B3A31547D11300EF638C /* account.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = account.sql; sourceTree = "<group>"; };
 		D088B3AB1547DB8F00EF638C /* gctest.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = gctest.xcodeproj; path = gctest/gctest.xcodeproj; sourceTree = "<group>"; };
@@ -38,6 +39,7 @@
 				D088B3CB1547F8B500EF638C /* dmsUser.py */,
 				D088B3C91547F8B500EF638C /* dmsError.py */,
 				D088B3C31547F8B500EF638C /* dmsConfig.py */,
+				D04F4721155AFF220097DA0B /* rank.py */,
 				D088B3A11547D11200EF638C /* sql */,
 				D088B3AB1547DB8F00EF638C /* gctest.xcodeproj */,
 			);

@@ -61,7 +61,7 @@ def userlogin():
     accountdb = connectAccountDb()
     row = accountdb.get('SELECT user_id, name FROM Users WHERE gamecenter_id=%s', gcid)
     if (row == None):
-        accountdb.execute('INSERT INTO Users (gamecenter_id, name) VALUES(%s, %s)', gcid, name)
+        accountdb.execute('INSERT INTO Users (gamecenter_id, name) VALUES(%s, %s)', gcid, username)
         row = accountdb.get('SELECT user_id, name FROM Users WHERE gamecenter_id=%s', gcid)
     userid=row['user_id']
     usernameindb = row['name']

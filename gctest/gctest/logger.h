@@ -7,6 +7,7 @@ class Logger : public DmsCallback{
 public:
     Logger(UITextView* pTextView);
     ~Logger();
+    void addLog(const char* log);
     virtual void onError(const char* error);
     virtual void onLogin(int error, const char* gcid, const char* datetime);
     virtual void onLogout();

@@ -295,7 +295,7 @@ bool dmsSubmitScore(int gameid, int score){
     if ( _pd->gameStartToken.empty() ){
         lwerror("dmsStartGame first");
         if ( _pd->pCallback ){
-            _pd->pCallback->onError("error: dmsStartGame first\n");
+            _pd->pCallback->onError("dmsStartGame first");
         }
         return false;
     }
