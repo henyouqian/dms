@@ -13,12 +13,6 @@ GAME_KEEP_SECOND = 600+20
 
 userBluePrint = Blueprint('user', __name__)
 
-def connectAccountDb():
-    return Connection(dmsConfig.host,
-                      dmsConfig.account_db,
-                      dmsConfig.user,
-                      dmsConfig.passwd)
-
 def userisLogin():
     if g.userid and g.developerid:
         return True
@@ -58,16 +52,18 @@ def userlogin():
         token = session['usertoken']
         g.mc.delete(token)
     session.clear()
-    accountdb = connectAccountDb()
-    row = accountdb.get('SELECT user_id, name FROM Users WHERE gamecenter_id=%s', gcid)
+
+    row = g.db.get('SELECT user_id, name FROM account_db.Users WHERE gamecenter_id=%s', gcid)
     if (row == None):
-        accountdb.execute('INSERT INTO Users (gamecenter_id, name) VALUES(%s, %s)', gcid, username)
-        row = accountdb.get('SELECT user_id, name FROM Users WHERE gamecenter_id=%s', gcid)
+        g.db.execute('INSERT INTO account_db.Users (gamecenter_id, name) VALUES(%s, %s)', gcid, username)
+        row = g.db.get('SELECT user_id, name FROM account_db.Users WHERE gamecenter_id=%s', gcid)
+        g.db.execute('INSERT INTO UserDatas (user_id, unread_from, cash) VALUES(%s, SUBDATE(UTC_DATE(), 1), 0)', row['user_id'])
     userid=row['user_id']
     usernameindb = row['name']
     if ( username != usernameindb ):
-        accountdb.execute('UPDATE Users SET name=%s WHERE gamecenter_id=%s', username, gcid)
-    row = accountdb.get('SELECT developer_id FROM Developers WHERE secret_key=%s', secretkey)
+        g.db.execute('UPDATE account_db.Users SET name=%s WHERE gamecenter_id=%s', username, gcid)
+
+    row = g.db.get('SELECT developer_id FROM account_db.Developers WHERE secret_key=%s', secretkey)
     if ( row == None ):
         return jsonify(error=DMSERR_SECRET)
     developerid = row['developer_id']
@@ -138,6 +134,16 @@ def usersubmitscore():
         else:
             g.db.execute('REPLACE INTO Scores (user_id, game_id, date, time, score) values(%s, %s, UTC_DATE(), UTC_TIME(), %s)', g.userid, gameid, score)
             return jsonify(error=DMSERR_NONE, gameid=gameid, score=score)
+
+@userBluePrint.route('/dmsapi/user/getunread')
+def getunread():
+    if (not userisLogin()):
+        return jsonify(error=DMSERR_LOGIN)
+    row = g.db.get('SELECT COUNT(*) FROM Ranks WHERE date > (SELECT unread_from from UserDatas WHERE user_id=%s)', g.userid)
+    if row:
+        return jsonify(error=DMSERR_NONE, num=row['COUNT(*)'])
+    else:
+        return jsonify(error=DMSERR_SQL)
     
 ###match
 @userBluePrint.route('/dmsapi/user/gettodaymatches')

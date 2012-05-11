@@ -86,9 +86,9 @@ namespace {
         }
         virtual void onRespond(){
             int error = DMSERR_NONE;
-            cJSON *json=parseMsg(_buff.c_str(), error);
             const char* gcid = NULL;
             const char* datetime = NULL;
+            cJSON *json=parseMsg(_buff.c_str(), error);
             if ( error == DMSERR_NONE ){
                 gcid = getJsonString(json, "gcid", error);
                 if ( gcid ){
@@ -181,10 +181,13 @@ namespace {
         }
         virtual void onRespond(){
             int error = DMSERR_NONE;
-            cJSON *json=parseMsg(_buff.c_str(), error);
             const char* token = NULL;
+            cJSON *json=parseMsg(_buff.c_str(), error);
             if ( error == DMSERR_NONE ){
                 token = getJsonString(json, "token", error);
+                if ( token ){
+                    _pd->gameStartToken = token;
+                }
             }
             onStartGame(error, token, _gameID);
             cJSON_Delete(json);
@@ -203,14 +206,32 @@ namespace {
         }
         virtual void onRespond(){
             int error = DMSERR_NONE;
-            cJSON *json=parseMsg(_buff.c_str(), error);
             int gameid = -1;
             int score = 0;
+            cJSON *json=parseMsg(_buff.c_str(), error);
             if ( error == DMSERR_NONE ){
                 gameid = getJsonInt(json, "gameid", error);
                 score = getJsonInt(json, "score", error);
             }
             onSubmitScore(error, gameid, score);
+            cJSON_Delete(json);
+        }
+    };
+    
+    class MsgGetUnread : public lw::HTTPMsg{
+    public:
+        MsgGetUnread()
+        :lw::HTTPMsg("/dmsapi/user/getunread", _pd->pHttpClient, false){
+            
+        }
+        virtual void onRespond(){
+            int error = DMSERR_NONE;
+            int num = 0;
+            cJSON *json=parseMsg(_buff.c_str(), error);
+            if ( error == DMSERR_NONE ){
+                num = getJsonInt(json, "num", error);
+            }
+            onGetUnread(error, num);
             cJSON_Delete(json);
         }
     };
@@ -247,7 +268,7 @@ void dmsDestroy(){
 }
 
 void dmsMain(){
-    
+    dmsHeartBeat();
 }
 
 void dmsSetCallback(DmsCallback* pCallback){
@@ -304,6 +325,12 @@ bool dmsSubmitScore(int gameid, int score){
     return true;
 }
 
+void dmsGetUnread(){
+    lwassert(_pd);
+    lw::HTTPMsg* pMsg = new MsgGetUnread();
+    pMsg->send();
+}
+
 void dmsGetTimeline(int offset){
     lwassert(_pd);
     lw::HTTPMsg* pMsg = new MsgGetTimeline(offset);
@@ -313,8 +340,6 @@ void dmsGetTimeline(int offset){
 void onLogin(int error, const char* gcid, const char* datetime){
     if ( error ){
         lwerror(getDmsErrorString(error));
-    }else{
-        lwinfo("login:" << gcid);
     }
     if ( _pd->pCallback ){
         _pd->pCallback->onLogin(error, gcid, datetime);
@@ -331,8 +356,6 @@ void onLogout(){
 void onHeartBeat(int error){
     if ( error ){
         lwerror(getDmsErrorString(error));
-    }else{
-        lwinfo("heart beat");
     }
     if ( _pd->pCallback ){
         _pd->pCallback->onHeartBeat(error);
@@ -342,8 +365,6 @@ void onHeartBeat(int error){
 void onGetTodayGames(int error, const std::vector<DmsGame>& games){
     if ( error ){
         lwerror(getDmsErrorString(error));
-    }else{
-        
     }
     if ( _pd->pCallback ){
         _pd->pCallback->onGetTodayGames(error, games);
@@ -353,9 +374,6 @@ void onGetTodayGames(int error, const std::vector<DmsGame>& games){
 void onStartGame(int error, const char* token, int gameid){
     if ( error ){
         lwerror(getDmsErrorString(error));
-    }else{
-        _pd->gameStartToken = token;
-        lwinfo("start game:" << token);
     }
     if ( _pd->pCallback ){
         _pd->pCallback->onStartGame(error, gameid);
@@ -365,10 +383,17 @@ void onStartGame(int error, const char* token, int gameid){
 void onSubmitScore(int error, int gameid, int score){
     if ( error ){
         lwerror(getDmsErrorString(error));
-    }else{
-        lwinfo("submit score: gameid=" << gameid << " score=" << score);
     }
     if ( _pd->pCallback ){
         _pd->pCallback->onSubmitScore(error, gameid, score);
+    }
+}
+
+void onGetUnread(int error, int num){
+    if ( error ){
+        lwerror(getDmsErrorString(error));
+    }
+    if ( _pd->pCallback ){
+        _pd->pCallback->onGetUnread(error, num);
     }
 }

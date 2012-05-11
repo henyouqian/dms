@@ -40,6 +40,7 @@
 }
 -(IBAction)onGetTodayGames:(id)sender{
     dmsGetTodayGames();
+    dmsGetUnread(); //test
 }
 
 -(IBAction)onStartGames:(id)sender{
@@ -74,19 +75,21 @@
 
 #pragma mark - View lifecycle
 
-/*
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    [NSTimer scheduledTimerWithTimeInterval:HEART_BEAT_SECOND target:self selector:@selector(timerAdvanced:) userInfo:nil repeats:YES];
 }
-*/
 
-- (void)viewDidUnload
-{
+- (void)viewDidUnload{
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
+}
+
+- (void)timerAdvanced:(NSTimer *)timer{
+    dmsMain();
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation

@@ -2,6 +2,7 @@
 #define __DMS_H__
 
 #define SECRET_KEY "480b4cf23ec84a1b93ab159f4938a3e5"
+#define HEART_BEAT_SECOND 600
 
 class DmsCallback;
 
@@ -16,6 +17,7 @@ void dmsHeartBeat();
 void dmsGetTodayGames();
 void dmsStartGame(int gameid);
 bool dmsSubmitScore(int gameid, int score);
+void dmsGetUnread();
 void dmsGetTimeline(int offset);
 
 struct Rank{
@@ -41,6 +43,7 @@ public:
     virtual void onGetTodayGames(int error, const std::vector<DmsGame>& games) {};
     virtual void onStartGame(int error, int gameid) {};
     virtual void onSubmitScore(int error, int gameid, int score) {};
+    virtual void onGetUnread(int error, int num) {};
     
 };
 
@@ -50,6 +53,7 @@ void onHeartBeat(int error);
 void onGetTodayGames(int error, const std::vector<DmsGame>& games);
 void onStartGame(int error, const char* token, int gameid);
 void onSubmitScore(int error, int gameid, int score);
+void onGetUnread(int error, int num);
 
 
 #endif //__DMS_H__

@@ -1,10 +1,14 @@
 from tornado.database import Connection
 from flask import Flask, g
 import pylibmc
+import thread
+import datetime
+import time
 import dmsConfig
 import dmsUser
 import dmsDev
 import dmsDevView
+import dmsGenRank
 
 app = Flask(__name__)
 app.debug = True
@@ -15,6 +19,8 @@ app.register_blueprint(dmsDev.devBluePrint)
 
 def init():
     app.mc = pylibmc.Client(['127.0.0.1'])
+    app.rankDate = datetime.datetime.utcnow().date()
+    thread.start_new_thread(genRankThread,())
 
 @app.before_request
 def beforRequest():
@@ -28,6 +34,16 @@ def beforRequest():
 def afterRequest(response):
     g.db.close()
     return response
+
+def genRankThread():
+    while True:
+        d = datetime.datetime.utcnow().date()
+        if ( d != app.rankDate ):
+            print 'genRank begin:date=%s' % str(app.rankDate)
+            dmsGenRank.genRank(app.rankDate)
+            print 'genRank end:date=%s' % str(app.rankDate)
+            app.rankDate = d
+        time.sleep(10)
 
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
