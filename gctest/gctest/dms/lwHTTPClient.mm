@@ -16,6 +16,12 @@
     }
     return self;
 }
+
+- (void)dealloc
+{
+    [super dealloc];
+}
+
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     pMsg->getBuff().clear();
@@ -37,11 +43,6 @@
     lwerror("http error:" << [[error localizedDescription]UTF8String] << " from: " << pMsg->getBuff().c_str());
     pMsg->onError();
     delete pMsg;
-}
-
-- (void)dealloc
-{
-    [super dealloc];
 }
 
 @end

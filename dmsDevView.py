@@ -13,7 +13,9 @@ def devregisterview():
 	
 @devBluePrint.route('/dms/dev/game')
 def devgameview():
-    return render_template('dmsDevGame.html')
+    appid = request.args.get('appid', type=int)
+    appname = request.args.get('appname', type=unicode)
+    return render_template('dmsDevGame.html', appid=appid, appname=appname)
 
 @devBluePrint.route('/dms/dev/match')
 def devmatchview():

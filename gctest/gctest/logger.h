@@ -11,7 +11,7 @@ public:
     virtual void onError(const char* error);
     virtual void onLogin(int error, const char* gcid, const char* datetime);
     virtual void onLogout();
-    virtual void onHeartBeat(int error);
+    virtual void onHeartBeat(int error, int unread);
     virtual void onGetTodayGames(int error, const std::vector<DmsGame>& games);
     virtual void onStartGame(int error, int gameid);
     virtual void onSubmitScore(int error, int gameid, int score);

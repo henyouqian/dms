@@ -5,6 +5,9 @@ $(document).ready(function(){
     $('#add').click(function(){
         addGameDiag();
     });
+    $('#appedit').click(function(){
+        editAppDiag();
+    });
     getGames();
     $('button').button();
 });
@@ -14,21 +17,66 @@ function back(){
     window.location.href='/dms/dev';
 }
 
+function editAppDiag(){
+    var html = '<table id=tbledit>\
+                    <tr>\
+                        <th>Name:</th>\
+                        <td><input id=name type=text /></td>\
+                    </tr>\
+                </table>';
+
+    var $dialog = $('<div class=ui-dialog></div>')
+    .html(html)
+    .dialog({
+        title: 'Edit app name',
+        modal: true,
+        buttons: {
+            "OK": function() {
+                editApp();
+                $( this ).dialog("close");
+            },
+            "Cancel": function() {
+                $( this ).dialog("close");
+            }
+        },
+        close: function(ev, ui) { $(this).dialog('destroy').remove(); },
+        width: 360
+    });
+}
+
+//todo
+function editApp(id){
+    var name=$('#name').attr('value');
+    var appid=_appid;
+    if ( name == '' ){
+        alert('name == NULL');
+    }else if ( appid =='' ){
+        alert('appid == NULL');
+    }else{
+        $.getJSON('/dmsapi/dev/game/edit', {id:id, name:name, order:order, appid:appid}, function(json){
+            err = json.error;
+            if (err==0){
+                getGames();
+            }else if (err==DMSERR_EXIST){
+                alert('game name already exists');
+            }else{
+                errorProc(err);
+            }
+        });
+    }
+}
+
 var diagHtml = '<table id=tbledit>\
-                <tr>\
-                    <th>Name:</th>\
-                    <td><input id=name type=text /></td>\
-                </tr>\
-                <tr>\
-                    <th>Order DESC:</th>\
-                    <td><input id=order type=checkbox /></td>\
-                    <td></td>\
-                </tr>\
-                <tr>\
-                    <th>App ID:</th>\
-                    <td><input id=appid type=text /></td>\
-                </tr>\
-            </table>';
+                    <tr>\
+                        <th>Name:</th>\
+                        <td><input id=name type=text /></td>\
+                    </tr>\
+                    <tr>\
+                        <th>Order DESC:</th>\
+                        <td><input id=order type=checkbox /></td>\
+                        <td></td>\
+                    </tr>\
+                </table>';
 
 function addGameDiag(){
     var $dialog = $('<div class=ui-dialog></div>')
@@ -53,13 +101,13 @@ function addGameDiag(){
 function addGame(){
     var name=$('#name').attr('value');
     var order=$('#order').get(0).checked?1:0;
-    var appid=$('#appid').attr('value');
+    var appid=_appid;
     if ( name == '' ){
         alert('name == NULL');
     }else if ( appid =='' ){
         alert('appid == NULL');
     }else{
-        $.getJSON('/dmsapi/dev/addgame', {name:name, order:order, appid:appid}, function(json){
+        $.getJSON('/dmsapi/dev/game/add', {name:name, order:order, appid:appid}, function(json){
             err = json.error;
             if (err==0){
                 getGames();
@@ -74,7 +122,7 @@ function addGame(){
     }
 }
 
-function editGameDiag(id, name, order, appid){
+function editGameDiag(id, name, order){
     var $dialog = $('<div class=ui-dialog></div>')
     .html(diagHtml)
     .dialog({
@@ -94,19 +142,18 @@ function editGameDiag(id, name, order, appid){
     });
     $('#name').attr('value', name);
     $('#order')[0].checked = order==1?true:false;
-    $('#appid').attr('value', appid);
 }
 
 function editGame(id){
     var name=$('#name').attr('value');
     var order=$('#order')[0].checked?1:0;
-    var appid=$('#appid').attr('value');
+    var appid=_appid;
     if ( name == '' ){
         alert('name == NULL');
     }else if ( appid =='' ){
         alert('appid == NULL');
     }else{
-        $.getJSON('/dmsapi/dev/editgame', {id:id, name:name, order:order, appid:appid}, function(json){
+        $.getJSON('/dmsapi/dev/game/edit', {id:id, name:name, order:order, appid:appid}, function(json){
             err = json.error;
             if (err==0){
                 getGames();
@@ -137,12 +184,10 @@ function delGameDiag(id, name){
         close: function(ev, ui) { $(this).dialog('destroy').remove(); },
         width: 360
     });
-    $('#name').attr('value', name);
-    $('#order')[0].checked = order==1?true:false;
 }
 
 function delGame(id){
-    $.getJSON('/dmsapi/dev/deletegame', {id:id}, function(json){
+    $.getJSON('/dmsapi/dev/game/delete', {id:id}, function(json){
         err = json.error;
         if (err==0){
             getGames();
@@ -153,7 +198,7 @@ function delGame(id){
 }
 
 function getGames(){
-    $.getJSON('/dmsapi/dev/getgames', function(json){
+    $.getJSON('/dmsapi/dev/game/get', {appid:_appid}, function(json){
         err = json.error;
         if (err==DMSERR_NONE){
             table = $('#tbl');

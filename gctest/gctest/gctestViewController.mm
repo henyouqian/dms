@@ -79,17 +79,12 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    [NSTimer scheduledTimerWithTimeInterval:HEART_BEAT_SECOND target:self selector:@selector(timerAdvanced:) userInfo:nil repeats:YES];
 }
 
 - (void)viewDidUnload{
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
-}
-
-- (void)timerAdvanced:(NSTimer *)timer{
-    dmsMain();
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation

@@ -14,6 +14,13 @@
 	</head>
 	<body>
         <button id=back>Back</button>
+        <table>
+			<tr>
+				<th>App name:</th>
+				<td>{{appname}}</td>
+				<td><button id=appedit>Edit</button></td>
+			</tr>
+		</table>
         <table id=tbl>
             <caption>Games</caption>
             <tr>
@@ -26,5 +33,8 @@
             </tr>
         </table>
 	</body>
+	<script type="text/javascript">
+	    _appid = {{appid}}
+	</script>
 </html>
 

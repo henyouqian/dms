@@ -1,4 +1,5 @@
---DROP DATABASE IF EXISTS account_db;
+# DROP DATABASE IF EXISTS account_db;
+
 CREATE DATABASE account_db DEFAULT CHARACTER SET utf8;
 USE account_db;
 

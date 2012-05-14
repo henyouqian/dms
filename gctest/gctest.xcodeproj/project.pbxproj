@@ -20,8 +20,11 @@
 		D05592B515578D510015F543 /* dmsTestFunc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D05592B315578D510015F543 /* dmsTestFunc.cpp */; };
 		D05592C31559585D0015F543 /* logger.mm in Sources */ = {isa = PBXBuildFile; fileRef = D05592C21559585D0015F543 /* logger.mm */; };
 		D088B3D0154862B600EF638C /* dmsError.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D088B3CF154862B600EF638C /* dmsError.cpp */; };
+		D0C13739155D2365009F5025 /* lwFileSys.mm in Sources */ = {isa = PBXBuildFile; fileRef = D0C13738155D2365009F5025 /* lwFileSys.mm */; };
+		D0C1373C155D24A8009F5025 /* dms.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = D0C1373B155D24A8009F5025 /* dms.sqlite */; };
+		D0C1373E155D28EB009F5025 /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D0C1373D155D28EB009F5025 /* libsqlite3.0.dylib */; };
 		D0F2BB8714BD572F009CE7EA /* cJSON.c in Sources */ = {isa = PBXBuildFile; fileRef = D0F2BB7C14BD572F009CE7EA /* cJSON.c */; };
-		D0F2BB8814BD572F009CE7EA /* dms.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0F2BB7F14BD572F009CE7EA /* dms.cpp */; };
+		D0F2BB8814BD572F009CE7EA /* dms.mm in Sources */ = {isa = PBXBuildFile; fileRef = D0F2BB7F14BD572F009CE7EA /* dms.mm */; };
 		D0F2BB8A14BD572F009CE7EA /* lwHTTPClient.mm in Sources */ = {isa = PBXBuildFile; fileRef = D0F2BB8414BD572F009CE7EA /* lwHTTPClient.mm */; };
 		D0F2BBA114BD6016009CE7EA /* lwUtil.mm in Sources */ = {isa = PBXBuildFile; fileRef = D0F2BBA014BD6016009CE7EA /* lwUtil.mm */; };
 /* End PBXBuildFile section */
@@ -48,9 +51,13 @@
 		D05592C21559585D0015F543 /* logger.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = logger.mm; sourceTree = "<group>"; };
 		D088B3CD15485F3700EF638C /* dmsError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dmsError.h; sourceTree = "<group>"; };
 		D088B3CF154862B600EF638C /* dmsError.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dmsError.cpp; sourceTree = "<group>"; };
+		D0C13737155D2365009F5025 /* lwFileSys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lwFileSys.h; sourceTree = "<group>"; };
+		D0C13738155D2365009F5025 /* lwFileSys.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = lwFileSys.mm; sourceTree = "<group>"; };
+		D0C1373B155D24A8009F5025 /* dms.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = dms.sqlite; sourceTree = "<group>"; };
+		D0C1373D155D28EB009F5025 /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = usr/lib/libsqlite3.0.dylib; sourceTree = SDKROOT; };
 		D0F2BB7C14BD572F009CE7EA /* cJSON.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cJSON.c; sourceTree = "<group>"; };
 		D0F2BB7D14BD572F009CE7EA /* cJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cJSON.h; sourceTree = "<group>"; };
-		D0F2BB7F14BD572F009CE7EA /* dms.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dms.cpp; sourceTree = "<group>"; };
+		D0F2BB7F14BD572F009CE7EA /* dms.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = dms.mm; sourceTree = "<group>"; };
 		D0F2BB8014BD572F009CE7EA /* dms.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dms.h; sourceTree = "<group>"; };
 		D0F2BB8314BD572F009CE7EA /* lwHTTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lwHTTPClient.h; sourceTree = "<group>"; };
 		D0F2BB8414BD572F009CE7EA /* lwHTTPClient.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = lwHTTPClient.mm; sourceTree = "<group>"; };
@@ -66,6 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0C1373E155D28EB009F5025 /* libsqlite3.0.dylib in Frameworks */,
 				D01A55D914BC324700D8A7EF /* GameKit.framework in Frameworks */,
 				D01A55B914BC2D3F00D8A7EF /* UIKit.framework in Frameworks */,
 				D01A55BB14BC2D3F00D8A7EF /* Foundation.framework in Frameworks */,
@@ -79,6 +87,7 @@
 		D01A55A914BC2D3F00D8A7EF = {
 			isa = PBXGroup;
 			children = (
+				D0C1373D155D28EB009F5025 /* libsqlite3.0.dylib */,
 				D01A55BE14BC2D3F00D8A7EF /* gctest */,
 				D01A55B714BC2D3F00D8A7EF /* Frameworks */,
 				D01A55B514BC2D3F00D8A7EF /* Products */,
@@ -107,6 +116,7 @@
 		D01A55BE14BC2D3F00D8A7EF /* gctest */ = {
 			isa = PBXGroup;
 			children = (
+				D0C1373A155D24A8009F5025 /* data */,
 				D0F2BB7B14BD572F009CE7EA /* cJSON */,
 				D0F2BB7E14BD572F009CE7EA /* dms */,
 				D01A55C714BC2D3F00D8A7EF /* gctestAppDelegate.h */,
@@ -133,6 +143,14 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		D0C1373A155D24A8009F5025 /* data */ = {
+			isa = PBXGroup;
+			children = (
+				D0C1373B155D24A8009F5025 /* dms.sqlite */,
+			);
+			path = data;
+			sourceTree = "<group>";
+		};
 		D0F2BB7B14BD572F009CE7EA /* cJSON */ = {
 			isa = PBXGroup;
 			children = (
@@ -151,11 +169,13 @@
 				D0F2BBA014BD6016009CE7EA /* lwUtil.mm */,
 				D0F2BB8C14BD57D8009CE7EA /* dmsPreinclude.h */,
 				D0F2BB8014BD572F009CE7EA /* dms.h */,
-				D0F2BB7F14BD572F009CE7EA /* dms.cpp */,
+				D0F2BB7F14BD572F009CE7EA /* dms.mm */,
 				D05592B415578D510015F543 /* dmsTestFunc.h */,
 				D05592B315578D510015F543 /* dmsTestFunc.cpp */,
 				D0F2BB8314BD572F009CE7EA /* lwHTTPClient.h */,
 				D0F2BB8414BD572F009CE7EA /* lwHTTPClient.mm */,
+				D0C13737155D2365009F5025 /* lwFileSys.h */,
+				D0C13738155D2365009F5025 /* lwFileSys.mm */,
 				D0F2BB8514BD572F009CE7EA /* lwLog.h */,
 				D0F2BB8614BD572F009CE7EA /* lwLogMac.h */,
 			);
@@ -215,6 +235,7 @@
 				D01A55C314BC2D3F00D8A7EF /* InfoPlist.strings in Resources */,
 				D01A55CC14BC2D3F00D8A7EF /* MainWindow.xib in Resources */,
 				D01A55D214BC2D3F00D8A7EF /* gctestViewController.xib in Resources */,
+				D0C1373C155D24A8009F5025 /* dms.sqlite in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -229,12 +250,13 @@
 				D01A55C914BC2D3F00D8A7EF /* gctestAppDelegate.mm in Sources */,
 				D01A55CF14BC2D3F00D8A7EF /* gctestViewController.mm in Sources */,
 				D0F2BB8714BD572F009CE7EA /* cJSON.c in Sources */,
-				D0F2BB8814BD572F009CE7EA /* dms.cpp in Sources */,
+				D0F2BB8814BD572F009CE7EA /* dms.mm in Sources */,
 				D0F2BB8A14BD572F009CE7EA /* lwHTTPClient.mm in Sources */,
 				D0F2BBA114BD6016009CE7EA /* lwUtil.mm in Sources */,
 				D088B3D0154862B600EF638C /* dmsError.cpp in Sources */,
 				D05592B515578D510015F543 /* dmsTestFunc.cpp in Sources */,
 				D05592C31559585D0015F543 /* logger.mm in Sources */,
+				D0C13739155D2365009F5025 /* lwFileSys.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

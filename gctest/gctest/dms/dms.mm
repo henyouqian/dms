@@ -1,11 +1,53 @@
 #include "dms.h"
 #include "dmsError.h"
 #include "cJSON.h"
+#include "sqlite3.h"
+#include "lwFileSys.h"
 
 Rank::Rank(int _row, int _rank, int _score, const char* _userName)
 :row(_row), rank(_rank), score(_score){
     userName = _userName?_userName:"";
 }
+
+@interface DmsMain : NSObject {
+@private
+    int _tHeartBeat;
+}
+@end
+
+@implementation DmsMain
+
+- (id)init
+{
+    if ( self =[super init] ){
+        [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(timerAdvanced:) userInfo:nil repeats:YES];
+        _tHeartBeat = 0;
+        
+        NSDate* localDate = [NSDate date];
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        NSTimeZone *timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
+        [dateFormatter setTimeZone:timeZone];
+        [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
+        NSString *dateString = [dateFormatter stringFromDate:localDate];
+        [dateFormatter release];
+    }
+    return self;
+}
+
+- (void)dealloc
+{
+    [super dealloc];
+}
+
+- (void)timerAdvanced:(NSTimer *)timer{
+    ++_tHeartBeat;
+    if ( _tHeartBeat >= HEART_BEAT_SECOND ){
+        dmsHeartBeat();
+        _tHeartBeat = 0;
+    }
+}
+
+@end
 
 namespace {
     
@@ -18,6 +60,8 @@ namespace {
         int appId;
         DmsCallback* pCallback;
         std::string gameStartToken;
+        DmsMain* dmsMain;
+        sqlite3* db;
     };
     
     Data* _pd = NULL;
@@ -81,7 +125,7 @@ namespace {
         MsgLogin(const char* gcid, const char* username)
         :lw::HTTPMsg("/dmsapi/user/login", _pd->pHttpClient, true){
             std::stringstream ss;
-            ss << "?gcid=" << gcid << "&secretkey=" << SECRET_KEY << "&username=" << username;
+            ss << "?gcid=" << gcid << "&secretkey=" << SECRET_KEY << "&username=" << username << "&appid=" << _pd->appId;
             addParam(ss.str().c_str());
         }
         virtual void onRespond(){
@@ -125,7 +169,11 @@ namespace {
         virtual void onRespond(){
             int error = DMSERR_NONE;
             cJSON *json=parseMsg(_buff.c_str(), error);
-            onHeartBeat(error);
+            int unread = 0;
+            if ( error == DMSERR_NONE ){
+                unread = getJsonInt(json, "unread", error);
+            }
+            onHeartBeat(error, unread);
             cJSON_Delete(json);
         }
     };
@@ -134,9 +182,7 @@ namespace {
     public:
         MsgGetTodayGames()
         :lw::HTTPMsg("/dmsapi/user/gettodaygames", _pd->pHttpClient, false){
-            std::stringstream ss;
-            ss << "?appid=" << _pd->appId;
-            addParam(ss.str().c_str());
+            
         }
         virtual void onRespond(){
             int error = DMSERR_NONE;
@@ -258,17 +304,38 @@ void dmsInit(int appid){
     _pd->pHttpClient->enableHTTPS(false);
     _pd->appId = appid;
     _pd->pCallback = NULL;
+    _pd->dmsMain = [[DmsMain alloc] init];
+    
+    std::string docDir = lw::getDocDir();
+    docDir += "/dms.sqlite";
+	FILE* pf = fopen(docDir.c_str(), "rb");
+	if ( pf == NULL ){
+		pf = fopen(_f("dms.sqlite"), "rb");
+		lwassert(pf);
+		fseek(pf, 0, SEEK_END);
+		int len = ftell(pf);
+		char* buf = new char[len];
+		fseek(pf, 0, SEEK_SET);
+		fread(buf, len, 1, pf);
+		fclose(pf);
+		FILE* pOut = fopen(docDir.c_str(), "wb");
+		lwassert(pOut);
+		fwrite(buf, len, 1, pOut);
+		fclose(pOut);
+        delete [] buf;
+	}
+    
+	int r = sqlite3_open(docDir.c_str(), &(_pd->db));
+	lwassert(r == SQLITE_OK);
 }
 
 void dmsDestroy(){
     lwassert(_pd);
     delete _pd->pHttpClient;
+    [_pd->dmsMain release];
+    sqlite3_close(_pd->db);
     delete _pd;
     _pd = NULL;
-}
-
-void dmsMain(){
-    dmsHeartBeat();
 }
 
 void dmsSetCallback(DmsCallback* pCallback){
@@ -353,12 +420,12 @@ void onLogout(){
     }
 }
 
-void onHeartBeat(int error){
+void onHeartBeat(int error, int unread){
     if ( error ){
         lwerror(getDmsErrorString(error));
     }
     if ( _pd->pCallback ){
-        _pd->pCallback->onHeartBeat(error);
+        _pd->pCallback->onHeartBeat(error, unread);
     }
 }
 

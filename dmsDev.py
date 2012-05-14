@@ -11,6 +11,7 @@ PASSWORDAPPEND = 'henyouqianhenyouqianD#$%894'
 HEART_BEET_SECOND = 3600
 CACHE_KEEP_SECOND = HEART_BEET_SECOND + 60
 GAME_MAX_PER_DEVELOPER = 20
+APP_MAX_PER_DEVELOPER = 10
 
 devBluePrint = Blueprint('dev', __name__)
 
@@ -18,12 +19,6 @@ def devisLogin():
     if g.userid:
         return True
     return False
-
-def connectAccountDb():
-    return Connection(dmsConfig.host,
-                      dmsConfig.account_db,
-                      dmsConfig.user,
-                      dmsConfig.passwd)
 
 @devBluePrint.before_request
 def before_request():
@@ -42,13 +37,12 @@ def devregister():
     #todo: check email and password
     shapw = hashlib.sha256(password+PASSWORDAPPEND).hexdigest()
     secretkey = uuid.uuid4().hex;
-    accountdb = connectAccountDb()
     try:
-        accountdb.execute('INSERT INTO Developers (email, password, secret_key) VALUES(%s, %s, %s)', email, shapw, secretkey)
+        g.db.execute('INSERT INTO account_db.Developers (email, password, secret_key) VALUES(%s, %s, %s)', email, shapw, secretkey)
     except:
         return jsonify(error=DMSERR_EXIST)
     session['developer_email'] = email
-    row = accountdb.get('SELECT developer_id FROM Developers WHERE email=%s', email)
+    row = g.db.get('SELECT developer_id FROM account_db.Developers WHERE email=%s', email)
     session['developer_id'] = row
     
     return jsonify(error=DMSERR_NONE, developerid=session['developer_id'], developeremail=session['developer_email'])
@@ -63,8 +57,7 @@ def devlogin():
     password = request.args.get('password', type=unicode)
     if ( email==None or password==None ):
         return jsonify(error=DMSERR_PARAM)
-    accountdb = connectAccountDb()
-    row = accountdb.get('SELECT password, developer_id FROM Developers WHERE email=%s', email)
+    row = g.db.get('SELECT password, developer_id FROM account_db.Developers WHERE email=%s', email)
     if ( row == None ):
         return jsonify(error=DMSERR_EXIST)
     else:
@@ -100,12 +93,71 @@ def devheartbeat():
 def devgetsecretkey():
     if (not devisLogin()):
         return jsonify(error=DMSERR_LOGIN)
-    accountdb = connectAccountDb()
-    row = accountdb.get('SELECT secret_key FROM Developers WHERE developer_id=%s', g.userid)
+    row = g.db.get('SELECT secret_key FROM account_db.Developers WHERE developer_id=%s', g.userid)
     return jsonify(error=DMSERR_NONE, secretkey=row['secret_key']);
 
+###apps
+@devBluePrint.route('/dmsapi/dev/app/get')
+def devgetapps():
+    if (not devisLogin()):
+        return jsonify(error=DMSERR_LOGIN)
+    try:
+        rows = g.db.iter('SELECT app_id, name FROM Apps WHERE developer_id=%s ORDER BY app_id ASC', g.userid)
+        data = [{'id':row['app_id'], 'name':row['name']} for row in rows]
+        return jsonify(error=DMSERR_NONE, data=data)
+    except:
+        return jsonify(error=DMSERR_SQL)
+        
+@devBluePrint.route('/dmsapi/dev/app/add')
+def devaddapp():
+    if (not devisLogin()):
+        return jsonify(error=DMSERR_LOGIN)
+    name = request.args.get('name', type=unicode)
+    if ( name==None ):
+        return jsonify(error=DMSERR_PARAM)
+    row = g.db.get('SELECT COUNT(*) FROM Apps WHERE developer_id=%s', g.userid)
+    if row['COUNT(*)'] >= APP_MAX_PER_DEVELOPER:
+        return jsonify(error=DMSERR_RANGE)
+    try:
+        g.db.execute('INSERT INTO Apps (developer_id, name) VALUES(%s, %s)', g.userid, name)
+    except MySQLdb.IntegrityError as e:
+        if ( e.args[0] == 1062 ):
+            return jsonify(error=DMSERR_EXIST)
+        else:
+            return jsonify(error=DMSERR_SQL)
+    except:
+        return jsonify(error=DMSERR_SQL)
+    return jsonify(error=DMSERR_NONE)
+    
+@devBluePrint.route('/dmsapi/dev/app/delete')
+def devdeleteapp():
+    if (not devisLogin()):
+        return jsonify(error=DMSERR_LOGIN)
+    appid = request.args.get('id', type=int)
+    if ( appid==None ):
+        return jsonify(error=DMSERR_PARAM)
+    try:
+        g.db.execute('DELETE FROM Apps WHERE developer_id=%s AND app_id=%s', g.userid, appid)
+    except:
+        return jsonify(error=DMSERR_SQL)
+    return jsonify(error=DMSERR_NONE)
+
 ###games
-@devBluePrint.route('/dmsapi/dev/addgame')
+@devBluePrint.route('/dmsapi/dev/game/get')
+def devgetgames():
+    if (not devisLogin()):
+        return jsonify(error=DMSERR_LOGIN)
+    appid = request.args.get('appid', type=int)
+    if ( appid==None ):
+        return jsonify(error=DMSERR_PARAM)
+    try:
+        rows = g.db.iter('SELECT game_id, name, score_order, app_id FROM Games WHERE developer_id=%s AND app_id=%s order by game_id ASC', g.userid, appid)
+        data = [{'id':row['game_id'], 'name':row['name'], 'order':row['score_order'], 'appid':row['app_id']} for row in rows]
+        return jsonify(error=DMSERR_NONE, data=data)
+    except:
+        return jsonify(error=DMSERR_SQL)
+
+@devBluePrint.route('/dmsapi/dev/game/add')
 def devaddgame():
     if (not devisLogin()):
         return jsonify(error=DMSERR_LOGIN)
@@ -129,7 +181,7 @@ def devaddgame():
     g.mc.delete('games%d' % g.userid)
     return jsonify(error=DMSERR_NONE)
 
-@devBluePrint.route('/dmsapi/dev/editgame')
+@devBluePrint.route('/dmsapi/dev/game/edit')
 def deveditgame():
     if (not devisLogin()):
         return jsonify(error=DMSERR_LOGIN)
@@ -148,10 +200,9 @@ def deveditgame():
             return jsonify(error=DMSERR_SQL)
     except:
         return jsonify(error=DMSERR_SQL)
-    g.mc.delete('games%d' % g.userid)
     return jsonify(error=DMSERR_NONE)
 
-@devBluePrint.route('/dmsapi/dev/deletegame')
+@devBluePrint.route('/dmsapi/dev/game/delete')
 def devdeletegame():
     if (not devisLogin()):
         return jsonify(error=DMSERR_LOGIN)
@@ -162,19 +213,7 @@ def devdeletegame():
         g.db.execute('DELETE FROM Games WHERE developer_id=%s AND game_id=%s', g.userid, gameid)
     except:
         return jsonify(error=DMSERR_SQL)
-    g.mc.delete('games%d' % g.userid)
     return jsonify(error=DMSERR_NONE)
-
-@devBluePrint.route('/dmsapi/dev/getgames')
-def devgetgames():
-    if (not devisLogin()):
-        return jsonify(error=DMSERR_LOGIN)
-    try:
-        rows = g.db.iter('SELECT game_id, name, score_order, app_id FROM Games WHERE developer_id=%s order by game_id DESC', g.userid)
-        data = [{'id':row['game_id'], 'name':row['name'], 'order':row['score_order'], 'appid':row['app_id']} for row in rows]
-        return jsonify(error=DMSERR_NONE, data=data)
-    except:
-        return jsonify(error=DMSERR_SQL)
 
 ###matchs
 @devBluePrint.route('/dmsapi/dev/match/add')

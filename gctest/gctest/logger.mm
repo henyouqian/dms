@@ -40,12 +40,12 @@ void Logger::onLogout(){
     addLog("onLogout");
 }
 
-void Logger::onHeartBeat(int error){
+void Logger::onHeartBeat(int error, int unread){
     std::stringstream ss;
     if ( error ){
         ss << "onLogin:error=" << getDmsErrorString(error);
     }else{
-        ss << "onHeartBeat";
+        ss << "onHeartBeat:unread=" << unread;
     }
     addLog(ss.str().c_str());
 }
