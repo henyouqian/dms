@@ -22,14 +22,6 @@ Rank::Rank(int _row, int _rank, int _score, const char* _userName)
     if ( self =[super init] ){
         [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(timerAdvanced:) userInfo:nil repeats:YES];
         _tHeartBeat = 0;
-        
-        NSDate* localDate = [NSDate date];
-        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-        NSTimeZone *timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
-        [dateFormatter setTimeZone:timeZone];
-        [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-        NSString *dateString = [dateFormatter stringFromDate:localDate];
-        [dateFormatter release];
     }
     return self;
 }
@@ -57,7 +49,6 @@ namespace {
         bool isLogin;
         std::vector<Rank> ranks;
         lw::HTTPClient* pHttpClient;
-        int appId;
         DmsCallback* pCallback;
         std::string gameStartToken;
         DmsMain* dmsMain;
@@ -92,6 +83,21 @@ namespace {
         }
         return 0;
     }
+    bool getJsonBool(cJSON* json, const char* key, int& error){
+        cJSON* jitem=cJSON_GetObjectItem(json, key);
+        if ( !jitem ){
+            error = DMSERR_JSON;
+        }else{
+            if ( jitem->type == cJSON_False ){
+                return false;
+            }else if ( jitem->type == cJSON_True ){
+                return true;
+            }else{
+                error = DMSERR_JSON;
+            }
+        }
+        return false;
+    }
     const char* getJsonString(cJSON* json, const char* key, int& error){
         cJSON* jobj=cJSON_GetObjectItem(json, key);
         if ( !jobj ){
@@ -125,7 +131,7 @@ namespace {
         MsgLogin(const char* gcid, const char* username)
         :lw::HTTPMsg("/dmsapi/user/login", _pd->pHttpClient, true){
             std::stringstream ss;
-            ss << "?gcid=" << gcid << "&secretkey=" << SECRET_KEY << "&username=" << username << "&appid=" << _pd->appId;
+            ss << "?gcid=" << gcid << "&appsecretkey=" << APP_SECRET_KEY << "&username=" << username;
             addParam(ss.str().c_str());
         }
         virtual void onRespond(){
@@ -169,11 +175,7 @@ namespace {
         virtual void onRespond(){
             int error = DMSERR_NONE;
             cJSON *json=parseMsg(_buff.c_str(), error);
-            int unread = 0;
-            if ( error == DMSERR_NONE ){
-                unread = getJsonInt(json, "unread", error);
-            }
-            onHeartBeat(error, unread);
+            onHeartBeat(error);
             cJSON_Delete(json);
         }
     };
@@ -251,6 +253,7 @@ namespace {
             addParam(ss.str().c_str());
         }
         virtual void onRespond(){
+            _pd->gameStartToken.clear();
             int error = DMSERR_NONE;
             int gameid = -1;
             int score = 0;
@@ -264,20 +267,20 @@ namespace {
         }
     };
     
-    class MsgGetUnread : public lw::HTTPMsg{
+    class MsgHasUnread : public lw::HTTPMsg{
     public:
-        MsgGetUnread()
-        :lw::HTTPMsg("/dmsapi/user/getunread", _pd->pHttpClient, false){
+        MsgHasUnread()
+        :lw::HTTPMsg("/dmsapi/user/hasunread", _pd->pHttpClient, false){
             
         }
         virtual void onRespond(){
             int error = DMSERR_NONE;
-            int num = 0;
+            bool hasunread = false;
             cJSON *json=parseMsg(_buff.c_str(), error);
             if ( error == DMSERR_NONE ){
-                num = getJsonInt(json, "num", error);
+                hasunread = getJsonBool(json, "hasunread", error);
             }
-            onGetUnread(error, num);
+            onHasUnread(error, hasunread);
             cJSON_Delete(json);
         }
     };
@@ -297,12 +300,11 @@ namespace {
     
 }//namespace
 
-void dmsInit(int appid){
+void dmsInit(){
     lwassert(_pd==NULL);
     _pd = new Data;
     _pd->pHttpClient = new lw::HTTPClient("127.0.0.1:8000");
     _pd->pHttpClient->enableHTTPS(false);
-    _pd->appId = appid;
     _pd->pCallback = NULL;
     _pd->dmsMain = [[DmsMain alloc] init];
     
@@ -374,6 +376,7 @@ void dmsGetTodayGames(){
 
 void dmsStartGame(int gameid){
     lwassert(_pd);
+    _pd->gameStartToken.clear();
     lw::HTTPMsg* pMsg = new MsgStartGame(gameid);
     pMsg->send();
 }
@@ -392,9 +395,9 @@ bool dmsSubmitScore(int gameid, int score){
     return true;
 }
 
-void dmsGetUnread(){
+void dmsHasUnread(){
     lwassert(_pd);
-    lw::HTTPMsg* pMsg = new MsgGetUnread();
+    lw::HTTPMsg* pMsg = new MsgHasUnread();
     pMsg->send();
 }
 
@@ -420,12 +423,12 @@ void onLogout(){
     }
 }
 
-void onHeartBeat(int error, int unread){
+void onHeartBeat(int error){
     if ( error ){
         lwerror(getDmsErrorString(error));
     }
     if ( _pd->pCallback ){
-        _pd->pCallback->onHeartBeat(error, unread);
+        _pd->pCallback->onHeartBeat(error);
     }
 }
 
@@ -456,11 +459,11 @@ void onSubmitScore(int error, int gameid, int score){
     }
 }
 
-void onGetUnread(int error, int num){
+void onHasUnread(int error, bool hasunread){
     if ( error ){
         lwerror(getDmsErrorString(error));
     }
     if ( _pd->pCallback ){
-        _pd->pCallback->onGetUnread(error, num);
+        _pd->pCallback->onHasUnread(error, hasunread);
     }
 }

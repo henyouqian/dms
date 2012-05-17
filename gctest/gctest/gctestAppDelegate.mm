@@ -24,7 +24,7 @@
     self.window.rootViewController = self.viewController;
     [self.window makeKeyAndVisible];
     
-    dmsInit(1);
+    dmsInit();
     [self.viewController setCallback];
 
     GKLocalPlayer *localPlayer = [GKLocalPlayer localPlayer];

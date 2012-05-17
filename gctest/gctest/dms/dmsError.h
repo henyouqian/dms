@@ -12,6 +12,7 @@
 #define DMSERR_RANGE        1006
 #define DMSERR_SECRET       1007
 #define DMSERR_NOTMATCH     1008
+#define DMSERR_APPID        1009
 
 
 const char* getDmsErrorString(int error);

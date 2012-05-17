@@ -40,12 +40,12 @@ void Logger::onLogout(){
     addLog("onLogout");
 }
 
-void Logger::onHeartBeat(int error, int unread){
+void Logger::onHeartBeat(int error){
     std::stringstream ss;
     if ( error ){
-        ss << "onLogin:error=" << getDmsErrorString(error);
+        ss << "onHeartBeat:error=" << getDmsErrorString(error);
     }else{
-        ss << "onHeartBeat:unread=" << unread;
+        ss << "onHeartBeat";
     }
     addLog(ss.str().c_str());
 }
@@ -85,12 +85,12 @@ void Logger::onSubmitScore(int error, int gameid, int score){
     addLog(ss.str().c_str());
 }
 
-void Logger::onGetUnread(int error, int num){
+void Logger::onHasUnread(int error, bool hasunread){
     std::stringstream ss;
     if ( error ){
-        ss << "onGetUnread:error=" << getDmsErrorString(error);
+        ss << "onHasUnread:error=" << getDmsErrorString(error);
     }else{
-        ss << "onGetUnread:num=" << num;
+        ss << "onHasUnread:hasunread=" << (hasunread?"true":"false");
     }
     addLog(ss.str().c_str());
 }

@@ -40,7 +40,7 @@
 }
 -(IBAction)onGetTodayGames:(id)sender{
     dmsGetTodayGames();
-    dmsGetUnread(); //test
+    dmsHasUnread(); //test
 }
 
 -(IBAction)onStartGames:(id)sender{

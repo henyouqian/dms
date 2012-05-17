@@ -2,7 +2,7 @@
 
 _f::_f(const char* filename){
 	//NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];	
-	NSString* str = [[NSString alloc] initWithCString:filename];
+	NSString* str = [[NSString alloc] initWithUTF8String:filename];
 	NSString* path = [[NSBundle mainBundle] pathForResource:str ofType:nil];
 	if ( path == nil ){
 		//lwerror("file miss: " << filename);

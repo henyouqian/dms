@@ -7,6 +7,8 @@ DMSERR_LOGIN    = 1004
 DMSERR_SQL      = 1005
 DMSERR_RANGE    = 1006
 DMSERR_SECRET   = 1007
+DMSERR_NOTMATCH = 1008
+DMSERR_APPID    = 1009
 
 function errorProc(err){
     if (err==0){
@@ -28,6 +30,10 @@ function errorProc(err){
         alert('DMSERR_RANGE');
     }else if (err==DMSERR_SECRET){
         alert('DMSERR_SECRET');
+    }else if (err==DMSERR_NOTMATCH){
+        alert('DMSERR_NOTMATCH');
+    }else if (err==DMSERR_APPID){
+        alert('DMSERR_APPID');
     }else{
         alert('unknown error');
     }

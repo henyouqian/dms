@@ -39,10 +39,10 @@ def genRankThread():
     while True:
         d = datetime.datetime.utcnow().date()
         if ( d != app.rankDate ):
+            app.rankDate = d
             print 'genRank begin:date=%s' % str(app.rankDate)
             dmsGenRank.genRank(app.rankDate)
             print 'genRank end:date=%s' % str(app.rankDate)
-            app.rankDate = d
         time.sleep(10)
 
 from tornado.wsgi import WSGIContainer

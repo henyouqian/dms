@@ -36,16 +36,12 @@ def devregister():
         return jsonify(error=DMSERR_PARAM)
     #todo: check email and password
     shapw = hashlib.sha256(password+PASSWORDAPPEND).hexdigest()
-    secretkey = uuid.uuid4().hex;
     try:
-        g.db.execute('INSERT INTO account_db.Developers (email, password, secret_key) VALUES(%s, %s, %s)', email, shapw, secretkey)
+        g.db.execute('INSERT INTO account_db.Developers (email, password) VALUES(%s, %s)', email, shapw)
     except:
         return jsonify(error=DMSERR_EXIST)
-    session['developer_email'] = email
-    row = g.db.get('SELECT developer_id FROM account_db.Developers WHERE email=%s', email)
-    session['developer_id'] = row
     
-    return jsonify(error=DMSERR_NONE, developerid=session['developer_id'], developeremail=session['developer_email'])
+    return jsonify(error=DMSERR_NONE)
 
 @devBluePrint.route('/dmsapi/dev/getdeveloperid')
 def devgetdeveloperid():
@@ -119,7 +115,8 @@ def devaddapp():
     if row['COUNT(*)'] >= APP_MAX_PER_DEVELOPER:
         return jsonify(error=DMSERR_RANGE)
     try:
-        g.db.execute('INSERT INTO Apps (developer_id, name) VALUES(%s, %s)', g.userid, name)
+        secretkey = uuid.uuid4().hex;
+        g.db.execute('INSERT INTO Apps (developer_id, name, secret_key) VALUES(%s, %s, %s)', g.userid, name, secretkey)
     except MySQLdb.IntegrityError as e:
         if ( e.args[0] == 1062 ):
             return jsonify(error=DMSERR_EXIST)
@@ -128,6 +125,19 @@ def devaddapp():
     except:
         return jsonify(error=DMSERR_SQL)
     return jsonify(error=DMSERR_NONE)
+
+
+@devBluePrint.route('/dmsapi/dev/app/secretkey')
+def devappsecretkey():
+    if (not devisLogin()):
+        return jsonify(error=DMSERR_LOGIN)
+    appid = request.args.get('appid', type=int)
+    if ( appid==None ):
+        return jsonify(error=DMSERR_PARAM)
+    row = g.db.get('SELECT secret_key FROM Apps WHERE app_id=%s AND developer_id=%s', appid, g.userid)
+    if row == None:
+        return jsonify(error=DMSERR_EXIST)
+    return jsonify(error=DMSERR_NONE, secretkey=row['secret_key'])
     
 @devBluePrint.route('/dmsapi/dev/app/delete')
 def devdeleteapp():
@@ -142,6 +152,25 @@ def devdeleteapp():
         return jsonify(error=DMSERR_SQL)
     return jsonify(error=DMSERR_NONE)
 
+@devBluePrint.route('/dmsapi/dev/app/edit')
+def deveditapp():
+    if (not devisLogin()):
+        return jsonify(error=DMSERR_LOGIN)
+    appid = request.args.get('appid', type=int)
+    appname = request.args.get('appname', type=unicode)
+    if ( appid==None or appname==None ):
+        return jsonify(error=DMSERR_PARAM)
+    try:
+        g.db.execute('UPDATE Apps SET name=%s WHERE developer_id=%s AND app_id=%s', appname, g.userid, appid)
+    except MySQLdb.IntegrityError as e:
+        if ( e.args[0] == 1062 ):
+            return jsonify(error=DMSERR_EXIST, appname=appname)
+        else:
+            return jsonify(error=DMSERR_SQL)
+    except:
+        return jsonify(error=DMSERR_SQL)
+    return jsonify(error=DMSERR_NONE, appname=appname)
+
 ###games
 @devBluePrint.route('/dmsapi/dev/game/get')
 def devgetgames():
@@ -151,8 +180,8 @@ def devgetgames():
     if ( appid==None ):
         return jsonify(error=DMSERR_PARAM)
     try:
-        rows = g.db.iter('SELECT game_id, name, score_order, app_id FROM Games WHERE developer_id=%s AND app_id=%s order by game_id ASC', g.userid, appid)
-        data = [{'id':row['game_id'], 'name':row['name'], 'order':row['score_order'], 'appid':row['app_id']} for row in rows]
+        rows = g.db.iter('SELECT game_id, name, score_order FROM Games WHERE developer_id=%s AND app_id=%s order by game_id ASC', g.userid, appid)
+        data = [{'id':row['game_id'], 'name':row['name'], 'order':row['score_order']} for row in rows]
         return jsonify(error=DMSERR_NONE, data=data)
     except:
         return jsonify(error=DMSERR_SQL)

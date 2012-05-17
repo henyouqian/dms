@@ -23,6 +23,8 @@ const char* getDmsErrorString(int error){
         return "DMSERR_SECRET";
     }else if ( error == DMSERR_NOTMATCH ){
         return "DMSERR_NOTMATCH";
+    }else if ( error == DMSERR_APPID ){
+        return "DMSERR_APPID";
     }else{
         return "DMSERR_UNKNOWN";
     }

@@ -6,7 +6,10 @@ $(document).ready(function(){
         addGameDiag();
     });
     $('#appedit').click(function(){
-        editAppDiag();
+        editAppDiag($('#appname').text());
+    });
+    $('#secretkey').click(function() {
+        secretkey();
     });
     getGames();
     $('button').button();
@@ -17,7 +20,18 @@ function back(){
     window.location.href='/dms/dev';
 }
 
-function editAppDiag(){
+function secretkey(){
+    $.getJSON('/dmsapi/dev/app/secretkey', {appid:_appid}, function(json){
+        err = json.error;
+        if (err==DMSERR_NONE){
+            alert(json.secretkey);
+        }else{
+            errorProc(err);
+        }
+    });
+}
+
+function editAppDiag(appname){
     var html = '<table id=tbledit>\
                     <tr>\
                         <th>Name:</th>\
@@ -42,21 +56,21 @@ function editAppDiag(){
         close: function(ev, ui) { $(this).dialog('destroy').remove(); },
         width: 360
     });
+    $('#name').attr('value', appname);
 }
 
-//todo
-function editApp(id){
-    var name=$('#name').attr('value');
+function editApp(){
+    var appname=$('#name').attr('value');
     var appid=_appid;
-    if ( name == '' ){
+    if ( appname == '' ){
         alert('name == NULL');
     }else if ( appid =='' ){
         alert('appid == NULL');
     }else{
-        $.getJSON('/dmsapi/dev/game/edit', {id:id, name:name, order:order, appid:appid}, function(json){
+        $.getJSON('/dmsapi/dev/app/edit', {appid:appid, appname:appname}, function(json){
             err = json.error;
             if (err==0){
-                getGames();
+                $('#appname').text(json.appname);
             }else if (err==DMSERR_EXIST){
                 alert('game name already exists');
             }else{
@@ -168,7 +182,7 @@ function editGame(id){
 
 function delGameDiag(id, name){
     var $dialog = $('<div class=ui-dialog></div>')
-    .html('Are you sure delete '+name+'?')
+    .html('Are you sure to delete '+name+'?')
     .dialog({
         title: 'Delete game',
         modal: true,
@@ -214,7 +228,6 @@ function getGames(){
                     order = 'DESC';
                 }
                 str+='<td class=order>'+order+'</td>';
-                str+='<td>'+this.appid+'</td>';
                 str+='<td><button class=del gameid='+this.id+' name='+this.name+'>Del</button></td>';
                 str+='</tr>';
             });

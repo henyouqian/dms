@@ -1,12 +1,12 @@
 #ifndef __DMS_H__
 #define __DMS_H__
 
-#define SECRET_KEY "96d8f494d9ce45d6bb26378b266d3e8b"
+#define APP_SECRET_KEY "6aa3b06bda37465ba506639d7035a763"
 #define HEART_BEAT_SECOND 60
 
 class DmsCallback;
 
-void dmsInit(int appid);
+void dmsInit();
 void dmsDestroy();
 void dmsSetCallback(DmsCallback* pCallback);
 
@@ -16,7 +16,7 @@ void dmsHeartBeat();
 void dmsGetTodayGames();
 void dmsStartGame(int gameid);
 bool dmsSubmitScore(int gameid, int score);
-void dmsGetUnread();
+void dmsHasUnread();
 void dmsGetTimeline(int offset);
 
 struct Rank{
@@ -38,21 +38,21 @@ public:
     virtual void onError(const char* error) {};
     virtual void onLogin(int error, const char* gcid, const char* datetime) {};
     virtual void onLogout() {};
-    virtual void onHeartBeat(int error, int unread) {};
+    virtual void onHeartBeat(int error) {};
     virtual void onGetTodayGames(int error, const std::vector<DmsGame>& games) {};
     virtual void onStartGame(int error, int gameid) {};
     virtual void onSubmitScore(int error, int gameid, int score) {};
-    virtual void onGetUnread(int error, int num) {};
+    virtual void onHasUnread(int error, bool hasunread) {};
     
 };
 
 void onLogin(int error, const char* gcid, const char* datetime);
 void onLogout();
-void onHeartBeat(int error, int unread);
+void onHeartBeat(int error);
 void onGetTodayGames(int error, const std::vector<DmsGame>& games);
 void onStartGame(int error, const char* token, int gameid);
 void onSubmitScore(int error, int gameid, int score);
-void onGetUnread(int error, int num);
+void onHasUnread(int error, bool hasunread);
 
 
 #endif //__DMS_H__

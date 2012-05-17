@@ -42,7 +42,6 @@ function getApps(){
                 str+='<tr class=datarow>';
                 str+='<td><button class=edit appid='+this.id+' name='+this.name+'>Edit</button></td>';
                 str+='<td class=name>'+this.name+'</td>';
-                str+='<td>'+this.id+'</td>';
                 str+='<td><button class=del appid='+this.id+' name='+this.name+'>Del</button></td>';
                 str+='</tr>';
             });
@@ -119,7 +118,7 @@ function editAppView(appid, appname){
 
 function delAppDiag(id, name){
     var $dialog = $('<div class=ui-dialog></div>')
-    .html('Are you sure delete '+name+'?')
+    .html('Are you sure to delete '+name+'?')
     .dialog({
         title: 'Delete app',
         modal: true,
