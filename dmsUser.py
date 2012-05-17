@@ -56,8 +56,7 @@ def userlogin():
     
     row = g.db.get('SELECT last_read FROM AppUserDatas WHERE user_id=%s AND app_id=%s', userid, appid)
     if ( row == None ):
-        date = datetime.datetime.utcnow().date()-datetime.timedelta(days=1)
-        g.db.execute('INSERT INTO AppUserDatas (user_id, app_id, last_read, last_write) VALUES (%s, %s, %s, %s)', userid, appid, date, date)
+        g.db.execute('INSERT INTO AppUserDatas (user_id, app_id, last_read, last_write) VALUES (%s, %s, %s, %s)', userid, appid, 0, 0)
     
     token = uuid.uuid4().hex
     session['usertoken'] = token
@@ -147,6 +146,17 @@ def hasunread():
     if row['last_read'] == row['last_write']:
         hasUnread = False;
     return jsonify(error=DMSERR_NONE, hasunread=hasUnread)
+
+@userBluePrint.route('/dmsapi/user/getunread')
+def getunread():
+    if (not userisLogin()):
+        return jsonify(error=DMSERR_LOGIN)
+    row = g.db.get('SELECT last_read, last_write FROM AppUserDatas WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
+    if row == None:
+        return jsonify(error=DMSERR_SQL)
+    lastread = row['last_read']
+    lastwrite = row['last_write']
+    return jsonify(error=DMSERR_NONE, unread=lastwrite-lastread)
 
 @userBluePrint.route('/dmsapi/user/gettimeline')
 def gettimeline():

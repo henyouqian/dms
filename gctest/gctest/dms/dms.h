@@ -16,7 +16,7 @@ void dmsHeartBeat();
 void dmsGetTodayGames();
 void dmsStartGame(int gameid);
 bool dmsSubmitScore(int gameid, int score);
-void dmsHasUnread();
+void dmsGetUnread();
 void dmsGetTimeline(int offset);
 
 struct Rank{
@@ -42,17 +42,8 @@ public:
     virtual void onGetTodayGames(int error, const std::vector<DmsGame>& games) {};
     virtual void onStartGame(int error, int gameid) {};
     virtual void onSubmitScore(int error, int gameid, int score) {};
-    virtual void onHasUnread(int error, bool hasunread) {};
-    
+    virtual void onGetUnread(int error, int unread) {};
 };
-
-void onLogin(int error, const char* gcid, const char* datetime);
-void onLogout();
-void onHeartBeat(int error);
-void onGetTodayGames(int error, const std::vector<DmsGame>& games);
-void onStartGame(int error, const char* token, int gameid);
-void onSubmitScore(int error, int gameid, int score);
-void onHasUnread(int error, bool hasunread);
 
 
 #endif //__DMS_H__

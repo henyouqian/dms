@@ -4,6 +4,14 @@
 #include "sqlite3.h"
 #include "lwFileSys.h"
 
+void onLogin(int error, const char* gcid, const char* datetime);
+void onLogout();
+void onHeartBeat(int error);
+void onGetTodayGames(int error, const std::vector<DmsGame>& games);
+void onStartGame(int error, const char* token, int gameid);
+void onSubmitScore(int error, int gameid, int score);
+void onGetUnread(int error, int unread);
+
 Rank::Rank(int _row, int _rank, int _score, const char* _userName)
 :row(_row), rank(_rank), score(_score){
     userName = _userName?_userName:"";
@@ -158,9 +166,7 @@ namespace {
     public:
         MsgLogout()
         :lw::HTTPMsg("/dmsapi/user/logout", _pd->pHttpClient, false){
-            std::stringstream ss;
-            ss << "?gcid=[2, 4, 654]";
-            addParam(ss.str().c_str());
+            
         }
         virtual void onRespond(){
             onLogout();
@@ -267,20 +273,20 @@ namespace {
         }
     };
     
-    class MsgHasUnread : public lw::HTTPMsg{
+    class MsgGetUnread : public lw::HTTPMsg{
     public:
-        MsgHasUnread()
-        :lw::HTTPMsg("/dmsapi/user/hasunread", _pd->pHttpClient, false){
+        MsgGetUnread()
+        :lw::HTTPMsg("/dmsapi/user/getunread", _pd->pHttpClient, false){
             
         }
         virtual void onRespond(){
             int error = DMSERR_NONE;
-            bool hasunread = false;
+            int unread = 0;
             cJSON *json=parseMsg(_buff.c_str(), error);
             if ( error == DMSERR_NONE ){
-                hasunread = getJsonBool(json, "hasunread", error);
+                unread = getJsonInt(json, "unread", error);
             }
-            onHasUnread(error, hasunread);
+            onGetUnread(error, unread);
             cJSON_Delete(json);
         }
     };
@@ -395,9 +401,9 @@ bool dmsSubmitScore(int gameid, int score){
     return true;
 }
 
-void dmsHasUnread(){
+void dmsGetUnread(){
     lwassert(_pd);
-    lw::HTTPMsg* pMsg = new MsgHasUnread();
+    lw::HTTPMsg* pMsg = new MsgGetUnread();
     pMsg->send();
 }
 
@@ -459,11 +465,11 @@ void onSubmitScore(int error, int gameid, int score){
     }
 }
 
-void onHasUnread(int error, bool hasunread){
+void onGetUnread(int error, int unread){
     if ( error ){
         lwerror(getDmsErrorString(error));
     }
     if ( _pd->pCallback ){
-        _pd->pCallback->onHasUnread(error, hasunread);
+        _pd->pCallback->onGetUnread(error, unread);
     }
 }

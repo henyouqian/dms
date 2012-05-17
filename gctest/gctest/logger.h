@@ -15,7 +15,7 @@ public:
     virtual void onGetTodayGames(int error, const std::vector<DmsGame>& games);
     virtual void onStartGame(int error, int gameid);
     virtual void onSubmitScore(int error, int gameid, int score);
-    virtual void onHasUnread(int error, bool hasunread);
+    virtual void onGetUnread(int error, int unread);
     
 private:
     UITextView* _pTextView;

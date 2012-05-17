@@ -47,7 +47,7 @@ def genRank(date):
                         WHERE r.user_id=%s AND r.idx_app_user=0 
                         AND (SELECT g.app_id FROM Games AS g WHERE g.game_id=r.game_id)=%s
                         ORDER BY time ASC''', (userid, appid) )
-            cur.execute('UPDATE AppUserDatas SET last_write=%s WHERE user_id=%s AND app_id=%s AND last_write<%s', (date, userid, appid, date))
+            cur.execute('UPDATE AppUserDatas SET last_write=@idx WHERE user_id=%s AND app_id=%s AND last_write<@idx', (userid, appid))
             conn.commit()
 
 from datetime import datetime

@@ -47,8 +47,8 @@ CREATE TABLE Ranks  (    user_id            INT UNSIGNED NOT NULL
 
 CREATE TABLE AppUserDatas  ( user_id        INT UNSIGNED NOT NULL
                             ,app_id         INT UNSIGNED NOT NULL
-                            ,last_read      DATE NOT NULL
-                            ,last_write     DATE NOT NULL
+                            ,last_read      INT NOT NULL
+                            ,last_write     INT NOT NULL
                             ,UNIQUE KEY uk_user_app (user_id, app_id)
                         )ENGINE = InnoDB;
 
