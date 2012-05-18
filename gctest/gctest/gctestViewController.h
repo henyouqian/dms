@@ -19,6 +19,8 @@ class Logger;
 @property (nonatomic, retain) IBOutlet UITextField* tfStartGameID;
 @property (nonatomic, retain) IBOutlet UITextField* tfSubmitGameID;
 @property (nonatomic, retain) IBOutlet UITextView* tvOutput;
+@property (nonatomic, retain) IBOutlet UITextField* tfTimelineOffset;
+@property (nonatomic, retain) IBOutlet UITextField* tfTimelineLimit;
 
 -(void)setCallback;
 
@@ -31,5 +33,6 @@ class Logger;
 -(IBAction)onSubmitScoreRandom:(id)sender;
 -(IBAction)onFakeLogin:(id)sender;
 -(IBAction)onBGTap:(id)sender;
+-(IBAction)onTimeline:(id)sender;
 
 @end

@@ -10,12 +10,8 @@ void onHeartBeat(int error);
 void onGetTodayGames(int error, const std::vector<DmsGame>& games);
 void onStartGame(int error, const char* token, int gameid);
 void onSubmitScore(int error, int gameid, int score);
-void onGetUnread(int error, int unread);
-
-Rank::Rank(int _row, int _rank, int _score, const char* _userName)
-:row(_row), rank(_rank), score(_score){
-    userName = _userName?_userName:"";
-}
+void onGetUnread(int error, int unread, int topid);
+void onGetTimeline(int error, std::vector<DmsRank>& ranks);
 
 @interface DmsMain : NSObject {
 @private
@@ -55,7 +51,6 @@ namespace {
         Data():pHttpClient(NULL), isLogin(false){}
         std::string gcid;
         bool isLogin;
-        std::vector<Rank> ranks;
         lw::HTTPClient* pHttpClient;
         DmsCallback* pCallback;
         std::string gameStartToken;
@@ -79,6 +74,9 @@ namespace {
         return json;
     }
     int getJsonInt(cJSON* json, const char* key, int& error){
+        if ( error != DMSERR_NONE ){
+            return 0;
+        }
         cJSON* jint=cJSON_GetObjectItem(json, key);
         if ( !jint ){
             error = DMSERR_JSON;
@@ -92,6 +90,9 @@ namespace {
         return 0;
     }
     bool getJsonBool(cJSON* json, const char* key, int& error){
+        if ( error != DMSERR_NONE ){
+            return false;
+        }
         cJSON* jitem=cJSON_GetObjectItem(json, key);
         if ( !jitem ){
             error = DMSERR_JSON;
@@ -107,6 +108,9 @@ namespace {
         return false;
     }
     const char* getJsonString(cJSON* json, const char* key, int& error){
+        if ( error != DMSERR_NONE ){
+            return NULL;
+        }
         cJSON* jobj=cJSON_GetObjectItem(json, key);
         if ( !jobj ){
             error = DMSERR_JSON;
@@ -121,6 +125,9 @@ namespace {
     }
     
     cJSON* getJsonArray(cJSON* json, const char* key, int& error){
+        if ( error != DMSERR_NONE ){
+            return NULL;
+        }
         cJSON* jobj=cJSON_GetObjectItem(json, key);
         if ( !jobj ){
             error = DMSERR_JSON;
@@ -282,25 +289,55 @@ namespace {
         virtual void onRespond(){
             int error = DMSERR_NONE;
             int unread = 0;
+            int topid = 0;
             cJSON *json=parseMsg(_buff.c_str(), error);
             if ( error == DMSERR_NONE ){
                 unread = getJsonInt(json, "unread", error);
             }
-            onGetUnread(error, unread);
+            if ( error == DMSERR_NONE ){
+                topid = getJsonInt(json, "topid", error);
+            }
+            onGetUnread(error, unread, topid);
             cJSON_Delete(json);
         }
     };
     
     class MsgGetTimeline : public lw::HTTPMsg{
     public:
-        MsgGetTimeline(int offset)
+        MsgGetTimeline(int offset, int limit)
         :lw::HTTPMsg("/dmsapi/user/gettimeline", _pd->pHttpClient, false){
             std::stringstream ss;
-            ss << "?offset=" << offset;
+            ss << "?offset=" << offset << "&limit=" << limit;
             addParam(ss.str().c_str());
         }
         virtual void onRespond(){
-            
+            int error = DMSERR_NONE;
+            cJSON *json=parseMsg(_buff.c_str(), error);
+            DmsRank rank;
+            std::vector<DmsRank> ranks;
+            if ( error == DMSERR_NONE ){
+                cJSON *jRanks = getJsonArray(json, "ranks", error);
+                if ( error == DMSERR_NONE ){
+                    rank.idx = getJsonInt(jRanks, "idx", error);
+                    rank.userid = getJsonInt(jRanks, "userid", error);
+                    rank.gameid = getJsonInt(jRanks, "gameid", error);
+                    rank.row = getJsonInt(jRanks, "row", error);
+                    rank.rank = getJsonInt(jRanks, "rank", error);
+                    rank.score = getJsonInt(jRanks, "score", error);
+                    rank.nationality = getJsonInt(jRanks, "nationality", error);
+                    const char* date = getJsonString(jRanks, "date", error);
+                    const char* time = getJsonString(jRanks, "time", error);
+                    const char* username = getJsonString(jRanks, "username", error);
+                    if ( error == DMSERR_NONE ){
+                        rank.date = date;
+                        rank.time = time;
+                        rank.username = username;
+                        ranks.push_back(rank);
+                    }
+                }
+            }
+            onGetTimeline(error, ranks);
+            cJSON_Delete(json);
         }
     };
     
@@ -407,9 +444,13 @@ void dmsGetUnread(){
     pMsg->send();
 }
 
-void dmsGetTimeline(int offset){
+void dmsGetTimeline(int offset, int limit){
     lwassert(_pd);
-    lw::HTTPMsg* pMsg = new MsgGetTimeline(offset);
+    if ( offset < 0 || limit <=0 ){
+        lwerror("param error");
+        return;
+    }
+    lw::HTTPMsg* pMsg = new MsgGetTimeline(offset, limit);
     pMsg->send();
 }
 
@@ -465,11 +506,20 @@ void onSubmitScore(int error, int gameid, int score){
     }
 }
 
-void onGetUnread(int error, int unread){
+void onGetUnread(int error, int unread, int topid){
     if ( error ){
         lwerror(getDmsErrorString(error));
     }
     if ( _pd->pCallback ){
-        _pd->pCallback->onGetUnread(error, unread);
+        _pd->pCallback->onGetUnread(error, unread, topid);
+    }
+}
+
+void onGetTimeline(int error, std::vector<DmsRank>& ranks){
+    if ( error ){
+        lwerror(getDmsErrorString(error));
+    }
+    if ( _pd->pCallback ){
+        _pd->pCallback->onGetTimeline(error, ranks);
     }
 }

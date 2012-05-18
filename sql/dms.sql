@@ -32,6 +32,7 @@ CREATE TABLE Scores (    user_id         INT UNSIGNED NOT NULL
 
 CREATE TABLE Ranks  (    user_id            INT UNSIGNED NOT NULL
                         ,game_id            INT UNSIGNED NOT NULL
+                        ,app_id             INT UNSIGNED NOT NULL
                         ,date               DATE NOT NULL
                         ,row                INT UNSIGNED NOT NULL
                         ,rank               INT UNSIGNED NOT NULL
@@ -41,6 +42,7 @@ CREATE TABLE Ranks  (    user_id            INT UNSIGNED NOT NULL
                         ,nationality        SMALLINT
                         ,idx_app_user       INT UNSIGNED NOT NULL
                         ,UNIQUE KEY uk_user_date_game (user_id, date, game_id)
+                        ,INDEX idx_app (app_id)
                         ,INDEX idx_row (row)
                         ,INDEX idx_idx_app_user (idx_app_user)
                     )ENGINE = InnoDB;

@@ -15,6 +15,8 @@
 @synthesize tfStartGameID;
 @synthesize tfSubmitGameID;
 @synthesize tvOutput;
+@synthesize tfTimelineOffset;
+@synthesize tfTimelineLimit;
 
 -(void)setCallback{
     _pLogger = new Logger(tvOutput);
@@ -63,6 +65,10 @@
     [tfFakeLogin resignFirstResponder];
     [tfStartGameID resignFirstResponder];
     [tfSubmitGameID resignFirstResponder];
+}
+
+-(IBAction)onTimeline:(id)sender{
+    
 }
 
 - (void)didReceiveMemoryWarning

@@ -10,6 +10,7 @@ import datetime
 HEART_BEET_SECOND = 600
 CACHE_KEEP_SECOND = HEART_BEET_SECOND + 60
 GAME_KEEP_SECOND = 600+20
+TIMELINE_LIMIT = 20
 
 userBluePrint = Blueprint('user', __name__)
 
@@ -156,19 +157,35 @@ def getunread():
         return jsonify(error=DMSERR_SQL)
     lastread = row['last_read']
     lastwrite = row['last_write']
-    return jsonify(error=DMSERR_NONE, unread=lastwrite-lastread)
+    return jsonify(error=DMSERR_NONE, unread=lastwrite-lastread, topid=lastwrite)
 
 @userBluePrint.route('/dmsapi/user/gettimeline')
 def gettimeline():
     if (not userisLogin()):
         return jsonify(error=DMSERR_LOGIN)
     offset = request.args.get('offset', type=int)
-    if ( offset==None ):
+    limit = request.args.get('limit', type=int)
+    if ( offset==None or offset < 0 or limit <= 0 ):
         return jsonify(error=DMSERR_PARAM)
-    rows = g.db.iter('''SELECT user_id, game_id, date, row, score, time, user_name, nationality FROM Ranks
-                        WHERE user_id=%s AND ''')
-    
-    return jsonify(error=DMSERR_NONE)
+    limit = min(limit, TIMELINE_LIMIT)
+    maxid = offset
+    minid = max(offset-limit, 0)
+
+    row = g.db.get('SELECT last_read, last_write FROM AppUserDatas WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
+    if row == None:
+        return jsonify(error=DMSERR_SQL)
+    lastread = row['last_read']
+    lastwrite = row['last_write']
+    if offset == 0:
+        row = g.db.execute('UPDATE AppUserDatas SET last_read=last_write WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
+
+    rows = g.db.iter('''SELECT user_id, game_id, date, row, rank, score, time, user_name, nationality, idx_app_user FROM Ranks
+                        WHERE user_id=%s AND app_id=%s AND idx_app_user<=maxid AND idx_app_user>minid
+                        ORDER BY idx_app_user DESC LIMIT %s'''
+                        , g.userid, g.appid, limit)
+    ranks = [{'idx':row['idx_app_user'], 'userid':row['user_id'], 'gameid':row['game_id'], 'date':str(row['date']), 'row':row['row'], 'rank':row['rank'], 'score':row['score'], 'time':str(row['time']), 'username':row['user_name'], 'nationality':row['nationality'] } for row in rows]
+
+    return jsonify(error=DMSERR_NONE, ranks=ranks)
     
 
 

@@ -19,8 +19,10 @@ def genRank(date):
 	        order = 'ASC'
 	        comp='MIN'
         cur.execute('SET @rownum = 0, @rank = 1, @prev_val = NULL')
-        cur.execute('''INSERT INTO Ranks (user_id, game_id, date, time, row, rank, score, user_name, nationality, idx_app_user) 
-                        SELECT s.user_id, s.game_id, s.date, s.time
+        cur.execute('''INSERT INTO Ranks (user_id, game_id, app_id, date, time, row, rank, score, user_name, nationality, idx_app_user) 
+                        SELECT s.user_id, s.game_id
+                            , (SELECT app_id FROM Games AS g WHERE g.game_id=s.game_id )
+                            , s.date, s.time
                             , @rownum := @rownum + 1
                             , @rank := IF(@prev_val!=s.score,@rownum,@rank)
                             , @prev_val := s.score
@@ -30,7 +32,7 @@ def genRank(date):
                         FROM Scores AS s
                         LEFT JOIN account_db.Users AS u
                         ON s.user_id=u.user_id
-                        WHERE game_id=%s AND date=%s AND score!=0
+                        WHERE s.game_id=%s AND s.date=%s AND s.score!=0
                         ORDER BY score '''+order+' , time ASC', (gameid, datestr))
         conn.commit()
 
@@ -40,17 +42,22 @@ def genRank(date):
         cur.execute('SELECT user_id FROM account_db.Users')
         for user in cur.fetchall():
             userid = user[0]
-            cur.execute('SELECT COUNT(*) FROM Ranks AS r WHERE (SELECT app_id FROM Games AS g WHERE g.game_id=r.game_id )=%s AND r.user_id=%s', (appid, userid))
+            cur.execute('SELECT COUNT(*) FROM Ranks WHERE app_id=%s AND user_id=%s', (appid, userid))
             maxid = cur.fetchone
             cur.execute('SET @idx = %s', maxid)
-            cur.execute('''UPDATE Ranks AS r SET idx_app_user=(@idx := @idx+1) 
-                        WHERE r.user_id=%s AND r.idx_app_user=0 
-                        AND (SELECT g.app_id FROM Games AS g WHERE g.game_id=r.game_id)=%s
+            cur.execute('''UPDATE Ranks SET idx_app_user=(@idx := @idx+1) 
+                        WHERE user_id=%s AND idx_app_user=0 AND app_id=%s
                         ORDER BY time ASC''', (userid, appid) )
             cur.execute('UPDATE AppUserDatas SET last_write=@idx WHERE user_id=%s AND app_id=%s AND last_write<@idx', (userid, appid))
             conn.commit()
 
-from datetime import datetime
+from datetime import datetime, timedelta
 def genToday():
     d = datetime.utcnow().date()
+    genRank(d)
+
+def genRankOffset(offset):
+    d = datetime.utcnow().date()
+    dlt = timedelta(days=offset)
+    d = d + dlt
     genRank(d)

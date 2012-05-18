@@ -85,12 +85,12 @@ void Logger::onSubmitScore(int error, int gameid, int score){
     addLog(ss.str().c_str());
 }
 
-void Logger::onGetUnread(int error, int unread){
+void Logger::onGetUnread(int error, int unread, int topid){
     std::stringstream ss;
     if ( error ){
         ss << "onGetUnread:error=" << getDmsErrorString(error);
     }else{
-        ss << "onGetUnread:unread=" << unread;
+        ss << "onGetUnread:unread=" << unread << ",topid=" << topid;
     }
     addLog(ss.str().c_str());
 }

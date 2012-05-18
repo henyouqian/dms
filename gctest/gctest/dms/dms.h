@@ -17,14 +17,19 @@ void dmsGetTodayGames();
 void dmsStartGame(int gameid);
 bool dmsSubmitScore(int gameid, int score);
 void dmsGetUnread();
-void dmsGetTimeline(int offset);
+void dmsGetTimeline(int offset, int limit);
 
-struct Rank{
-    Rank(int row, int rank, int score, const char* userName);
+struct DmsRank{
+    int idx;
+    int userid;
+    int gameid;
     int row;
     int rank;
     int score;
-    std::string userName;
+    int nationality;
+    std::string date;
+    std::string time;
+    std::string username;
 };
 
 struct DmsGame{
@@ -42,7 +47,8 @@ public:
     virtual void onGetTodayGames(int error, const std::vector<DmsGame>& games) {};
     virtual void onStartGame(int error, int gameid) {};
     virtual void onSubmitScore(int error, int gameid, int score) {};
-    virtual void onGetUnread(int error, int unread) {};
+    virtual void onGetUnread(int error, int unread, int topid) {};
+    virtual void onGetTimeline(int error, std::vector<DmsRank>& ranks) {};
 };
 
 
