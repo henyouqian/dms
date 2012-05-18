@@ -27,12 +27,14 @@
 		D088B3C71547F8B500EF638C /* dmsDevView.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = dmsDevView.py; sourceTree = "<group>"; };
 		D088B3C91547F8B500EF638C /* dmsError.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = dmsError.py; sourceTree = "<group>"; };
 		D088B3CB1547F8B500EF638C /* dmsUser.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = dmsUser.py; sourceTree = "<group>"; };
+		D097DFF01566776500F12F0E /* dmsRobot.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = dmsRobot.py; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		D088B37B1546AB6E00EF638C = {
 			isa = PBXGroup;
 			children = (
+				D097DFF01566776500F12F0E /* dmsRobot.py */,
 				D088B3C21547F8B500EF638C /* dms.py */,
 				D088B3C51547F8B500EF638C /* dmsDev.py */,
 				D088B3C71547F8B500EF638C /* dmsDevView.py */,

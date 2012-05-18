@@ -94,3 +94,22 @@ void Logger::onGetUnread(int error, int unread, int topid){
     }
     addLog(ss.str().c_str());
 }
+
+void Logger::onGetTimeline(int error, std::vector<DmsRank>& ranks){
+    std::stringstream ss;
+    if ( error ){
+        ss << "onGetTimeline:error=" << getDmsErrorString(error);
+    }else{
+        ss << "onGetTimeline:";
+        std::vector<DmsRank>::iterator it = ranks.begin();
+        std::vector<DmsRank>::iterator itend = ranks.end();
+        for ( ; it != itend; ++it ){
+            ss << "\n  idx=" << it->idx;
+            ss << " rw=" << it->row;
+            ss << " rk=" << it->rank;
+            ss << " sc=" << it->score;
+            ss << " gm=" << it->gameid;
+        }
+    }
+    addLog(ss.str().c_str());
+}

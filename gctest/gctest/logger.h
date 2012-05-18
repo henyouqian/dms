@@ -16,6 +16,7 @@ public:
     virtual void onStartGame(int error, int gameid);
     virtual void onSubmitScore(int error, int gameid, int score);
     virtual void onGetUnread(int error, int unread, int topid);
+    virtual void onGetTimeline(int error, std::vector<DmsRank>& ranks);
     
 private:
     UITextView* _pTextView;

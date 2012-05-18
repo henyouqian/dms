@@ -317,22 +317,26 @@ namespace {
             std::vector<DmsRank> ranks;
             if ( error == DMSERR_NONE ){
                 cJSON *jRanks = getJsonArray(json, "ranks", error);
-                if ( error == DMSERR_NONE ){
-                    rank.idx = getJsonInt(jRanks, "idx", error);
-                    rank.userid = getJsonInt(jRanks, "userid", error);
-                    rank.gameid = getJsonInt(jRanks, "gameid", error);
-                    rank.row = getJsonInt(jRanks, "row", error);
-                    rank.rank = getJsonInt(jRanks, "rank", error);
-                    rank.score = getJsonInt(jRanks, "score", error);
-                    rank.nationality = getJsonInt(jRanks, "nationality", error);
-                    const char* date = getJsonString(jRanks, "date", error);
-                    const char* time = getJsonString(jRanks, "time", error);
-                    const char* username = getJsonString(jRanks, "username", error);
-                    if ( error == DMSERR_NONE ){
-                        rank.date = date;
-                        rank.time = time;
-                        rank.username = username;
-                        ranks.push_back(rank);
+                if ( jRanks && error == DMSERR_NONE ){
+                    int sz = cJSON_GetArraySize(jRanks);
+                    for ( int i = 0; i < sz; ++i ){
+                        cJSON* jRank = cJSON_GetArrayItem(jRanks, i);
+                        rank.idx = getJsonInt(jRank, "idx", error);
+                        rank.userid = getJsonInt(jRank, "userid", error);
+                        rank.gameid = getJsonInt(jRank, "gameid", error);
+                        rank.row = getJsonInt(jRank, "row", error);
+                        rank.rank = getJsonInt(jRank, "rank", error);
+                        rank.score = getJsonInt(jRank, "score", error);
+                        rank.nationality = getJsonInt(jRank, "nationality", error);
+                        const char* date = getJsonString(jRank, "date", error);
+                        const char* time = getJsonString(jRank, "time", error);
+                        const char* username = getJsonString(jRank, "username", error);
+                        if ( error == DMSERR_NONE ){
+                            rank.date = date;
+                            rank.time = time;
+                            rank.username = username;
+                            ranks.push_back(rank);
+                        }
                     }
                 }
             }

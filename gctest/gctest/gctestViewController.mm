@@ -68,7 +68,7 @@
 }
 
 -(IBAction)onTimeline:(id)sender{
-    
+    dmsGetTimeline([[tfTimelineOffset text] intValue], [[tfTimelineLimit text] intValue]);
 }
 
 - (void)didReceiveMemoryWarning

@@ -21,11 +21,12 @@ CREATE TABLE Games  (    game_id             INT UNSIGNED PRIMARY KEY AUTO_INCRE
                         ,INDEX idx_app_id (app_id)
                     )ENGINE = InnoDB;
 
-CREATE TABLE Scores (    user_id         INT UNSIGNED NOT NULL
-                        ,game_id         INT UNSIGNED NOT NULL
-                        ,date            DATE NOT NULL
-                        ,time            TIME NOT NULL
-                        ,score           INT	UNSIGNED NOT NULL
+CREATE TABLE Scores (    user_id            INT UNSIGNED NOT NULL
+                        ,game_id            INT UNSIGNED NOT NULL
+                        ,date               DATE NOT NULL
+                        ,time               TIME NOT NULL
+                        ,score              INT UNSIGNED NOT NULL
+                        ,idx_app_user       INT UNSIGNED NOT NULL
                         ,UNIQUE KEY uk_user_date_game (user_id, date, game_id)
                         ,INDEX idx_date_game (date, game_id)
                     )ENGINE = InnoDB;

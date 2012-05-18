@@ -43,7 +43,7 @@ def userlogin():
 
     row = g.db.get('SELECT user_id, name FROM account_db.Users WHERE gamecenter_id=%s', gcid)
     if (row == None):
-        g.db.execute('INSERT INTO account_db.Users (gamecenter_id, name) VALUES(%s, %s)', gcid, username)
+        g.db.execute('INSERT INTO account_db.Users (gamecenter_id, name, nationality) VALUES(%s, %s, 0)', gcid, username)
         row = g.db.get('SELECT user_id, name FROM account_db.Users WHERE gamecenter_id=%s', gcid)
     userid=row['user_id']
     usernameindb = row['name']
@@ -105,14 +105,14 @@ def userstartgame():
         return jsonify(error=DMSERR_NOTMATCH)
     if row['app_id'] != g.appid:
         return jsonify(error=DMSERR_APPID)
-    row = g.db.get('SELECT score FROM Scores WHERE user_id=%s AND game_id=%s AND date=UTC_DATE()', g.userid, gameid)
-    if row == None:
+
+    try:
         g.db.execute('INSERT INTO Scores (user_id, game_id, date, time, score) VALUES (%s, %s, UTC_DATE(), UTC_TIME(), 0)', g.userid, gameid)
         key = uuid.uuid4().hex
         value = gameid
         g.mc.set(key, value, GAME_KEEP_SECOND)
         return jsonify(error=DMSERR_NONE, token=key)
-    else:
+    except:
         return jsonify(error=DMSERR_EXIST)
     
 @userBluePrint.route('/dmsapi/user/submitscore')
@@ -133,7 +133,11 @@ def usersubmitscore():
         if gameid != mcgameid:
             return jsonify(error=DMSERR_NOTMATCH)
         else:
-            g.db.execute('REPLACE INTO Scores (user_id, game_id, date, time, score) values(%s, %s, UTC_DATE(), UTC_TIME(), %s)', g.userid, gameid, score)
+            row = g.db.get('SELECT last_write FROM AppUserDatas WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
+            lastwrite = row['last_write']
+            lastwrite += 1
+            g.db.execute('REPLACE INTO Scores (user_id, game_id, date, time, score, idx_app_user) values(%s, %s, UTC_DATE(), UTC_TIME(), %s, %s)', g.userid, gameid, score, lastwrite)
+            g.db.execute('UPDATE AppUserDatas SET last_write=last_write+1 WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
             return jsonify(error=DMSERR_NONE, gameid=gameid, score=score)
 
 @userBluePrint.route('/dmsapi/user/hasunread')
@@ -168,21 +172,21 @@ def gettimeline():
     if ( offset==None or offset < 0 or limit <= 0 ):
         return jsonify(error=DMSERR_PARAM)
     limit = min(limit, TIMELINE_LIMIT)
-    maxid = offset
-    minid = max(offset-limit, 0)
-
+    
     row = g.db.get('SELECT last_read, last_write FROM AppUserDatas WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
     if row == None:
         return jsonify(error=DMSERR_SQL)
     lastread = row['last_read']
     lastwrite = row['last_write']
+    maxid = max(lastwrite-offset, 0)
+    minid = max(offset-limit, 0)
     if offset == 0:
         row = g.db.execute('UPDATE AppUserDatas SET last_read=last_write WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
 
     rows = g.db.iter('''SELECT user_id, game_id, date, row, rank, score, time, user_name, nationality, idx_app_user FROM Ranks
-                        WHERE user_id=%s AND app_id=%s AND idx_app_user<=maxid AND idx_app_user>minid
+                        WHERE user_id=%s AND app_id=%s AND idx_app_user<=%s AND idx_app_user>%s
                         ORDER BY idx_app_user DESC LIMIT %s'''
-                        , g.userid, g.appid, limit)
+                        , g.userid, g.appid, maxid, minid, limit)
     ranks = [{'idx':row['idx_app_user'], 'userid':row['user_id'], 'gameid':row['game_id'], 'date':str(row['date']), 'row':row['row'], 'rank':row['rank'], 'score':row['score'], 'time':str(row['time']), 'username':row['user_name'], 'nationality':row['nationality'] } for row in rows]
 
     return jsonify(error=DMSERR_NONE, ranks=ranks)
