@@ -107,7 +107,7 @@ def userstartgame():
         return jsonify(error=DMSERR_APPID)
 
     try:
-        g.db.execute('INSERT INTO Scores (user_id, game_id, date, time, score) VALUES (%s, %s, UTC_DATE(), UTC_TIME(), 0)', g.userid, gameid)
+        g.db.execute('INSERT INTO Scores (user_id, game_id, date, time, score, idx_app_user) VALUES (%s, %s, UTC_DATE(), UTC_TIME(), 0, 0)', g.userid, gameid)
         key = uuid.uuid4().hex
         value = gameid
         g.mc.set(key, value, GAME_KEEP_SECOND)
@@ -139,18 +139,6 @@ def usersubmitscore():
             g.db.execute('REPLACE INTO Scores (user_id, game_id, date, time, score, idx_app_user) values(%s, %s, UTC_DATE(), UTC_TIME(), %s, %s)', g.userid, gameid, score, lastwrite)
             g.db.execute('UPDATE AppUserDatas SET last_write=last_write+1 WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
             return jsonify(error=DMSERR_NONE, gameid=gameid, score=score)
-
-@userBluePrint.route('/dmsapi/user/hasunread')
-def hasunread():
-    if (not userisLogin()):
-        return jsonify(error=DMSERR_LOGIN)
-    row = g.db.get('SELECT last_read, last_write FROM AppUserDatas WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
-    if row == None:
-        return jsonify(error=DMSERR_SQL)
-    hasUnread = True;
-    if row['last_read'] == row['last_write']:
-        hasUnread = False;
-    return jsonify(error=DMSERR_NONE, hasunread=hasUnread)
 
 @userBluePrint.route('/dmsapi/user/getunread')
 def getunread():

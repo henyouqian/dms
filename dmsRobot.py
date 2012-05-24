@@ -38,7 +38,7 @@ def genScore(dayoffset, gameid, count):
             pass
 
         try:
-            score = random.randint(1, 999999)
+            score = random.randint(1, 9999)
             cur.execute('SELECT last_write FROM AppUserDatas WHERE user_id=%s AND app_id=%s', (userid, appid))
             lastwrite = cur.fetchone()[0]
             cur.execute('''INSERT INTO Scores (user_id, game_id, date, time, score, idx_app_user) VALUES(
