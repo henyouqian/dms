@@ -83,7 +83,7 @@ def userheartbeat():
     session['usertoken'] = token
     cachedata = [g.userid, g.appid]
     g.mc.set(token, cachedata, CACHE_KEEP_SECOND)
-    return jsonify(error=DMSERR_NONE)
+    return jsonify(error=DMSERR_NONE, time=str(datetime.datetime.utcnow()))
 
 @userBluePrint.route('/dmsapi/user/gettodaygames')
 def usergettodaygames():

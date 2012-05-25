@@ -1,8 +1,7 @@
 #include "dms.h"
 #include "dmsError.h"
 #include "cJSON.h"
-#include "sqlite3.h"
-#include "lwFileSys.h"
+#include "dmsLocalDB.h"
 
 void onLogin(int error, const char* gcid, const char* datetime);
 void onLogout();
@@ -12,6 +11,27 @@ void onStartGame(int error, const char* token, int gameid);
 void onSubmitScore(int error, int gameid, int score);
 void onGetUnread(int error, int unread, int topid);
 void onGetTimeline(int error, std::vector<DmsRank>& ranks);
+
+@class DmsMain;
+
+namespace {
+    struct Data{
+        Data():pHttpClient(NULL), isLogin(false){}
+        std::string gcid;
+        bool isLogin;
+        lw::HTTPClient* pHttpClient;
+        DmsCallback* pCallback;
+        std::string gameStartToken;
+        DmsMain* dmsMain;
+        DmsLocalDB* pLocalDB;
+    };
+    
+    Data* _pd = NULL;
+    void netErrorCallback(){
+        lwinfo("netErrorCallback");
+        _pd->isLogin = false;
+    }
+}
 
 @interface DmsMain : NSObject {
 @private
@@ -36,29 +56,20 @@ void onGetTimeline(int error, std::vector<DmsRank>& ranks);
 }
 
 - (void)timerAdvanced:(NSTimer *)timer{
-    ++_tHeartBeat;
-    if ( _tHeartBeat >= HEART_BEAT_SECOND ){
-        dmsHeartBeat();
-        _tHeartBeat = 0;
+    if ( _pd->isLogin ){
+        if ( _tHeartBeat >= HEART_BEAT_SECOND ){
+            ++_tHeartBeat;
+            dmsHeartBeat();
+            _tHeartBeat = 0;
+        }
+    }else{
+        
     }
 }
 
 @end
 
 namespace {
-    
-    struct Data{
-        Data():pHttpClient(NULL), isLogin(false){}
-        std::string gcid;
-        bool isLogin;
-        lw::HTTPClient* pHttpClient;
-        DmsCallback* pCallback;
-        std::string gameStartToken;
-        DmsMain* dmsMain;
-        sqlite3* db;
-    };
-    
-    Data* _pd = NULL;
     
     cJSON* parseMsg(const char* strMsg, int& error){
         error = DMSERR_NONE;
@@ -187,7 +198,12 @@ namespace {
         }
         virtual void onRespond(){
             int error = DMSERR_NONE;
+            const char* datetime = NULL;
             cJSON *json=parseMsg(_buff.c_str(), error);
+            if ( error == DMSERR_NONE ){
+                datetime = getJsonString(json, "games", error);
+                lwinfo(datetime);
+            }
             onHeartBeat(error);
             cJSON_Delete(json);
         }
@@ -354,35 +370,16 @@ void dmsInit(){
     _pd->pHttpClient->enableHTTPS(false);
     _pd->pCallback = NULL;
     _pd->dmsMain = [[DmsMain alloc] init];
+    _pd->pLocalDB = new DmsLocalDB();
     
-    std::string docDir = lw::getDocDir();
-    docDir += "/dms.sqlite";
-	FILE* pf = fopen(docDir.c_str(), "rb");
-	if ( pf == NULL ){
-		pf = fopen(_f("dms.sqlite"), "rb");
-		lwassert(pf);
-		fseek(pf, 0, SEEK_END);
-		int len = ftell(pf);
-		char* buf = new char[len];
-		fseek(pf, 0, SEEK_SET);
-		fread(buf, len, 1, pf);
-		fclose(pf);
-		FILE* pOut = fopen(docDir.c_str(), "wb");
-		lwassert(pOut);
-		fwrite(buf, len, 1, pOut);
-		fclose(pOut);
-        delete [] buf;
-	}
-    
-	int r = sqlite3_open(docDir.c_str(), &(_pd->db));
-	lwassert(r == SQLITE_OK);
+    lw::setHTTPErrorCallback(netErrorCallback);
 }
 
 void dmsDestroy(){
     lwassert(_pd);
     delete _pd->pHttpClient;
     [_pd->dmsMain release];
-    sqlite3_close(_pd->db);
+    delete _pd->pLocalDB;
     delete _pd;
     _pd = NULL;
 }
@@ -406,6 +403,12 @@ void dmsLogout(){
     _pd->isLogin = false;
     _pd->gameStartToken.clear();
     lw::HTTPMsg* pMsg = new MsgLogout();
+    pMsg->send();
+}
+
+void dmsPing(){
+    lwassert(_pd);
+    lw::HTTPMsg* pMsg = new MsgPing();
     pMsg->send();
 }
 

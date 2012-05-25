@@ -5,49 +5,16 @@
 @interface HTTPCallback : NSObject<NSURLConnectionDelegate> {
     lw::HTTPMsg *pMsg;
 }
-@end
-
-@implementation HTTPCallback
-- (id)initWithMsg:(lw::HTTPMsg*)p
-{
-    if ( self =[super init] ){
-        pMsg=p;
-        pMsg->_pObjCCallback=self;
-    }
-    return self;
-}
-
-- (void)dealloc
-{
-    [super dealloc];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
-    pMsg->getBuff().clear();
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
-    pMsg->getBuff().append((char*)([data bytes]), [data length]);
-}
-
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{
-    pMsg->onRespond();
-    delete pMsg;
-    [connection release];
-}
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
-{
-    lwerror("http error:" << [[error localizedDescription]UTF8String] << " from: " << pMsg->getBuff().c_str());
-    pMsg->onError();
-    delete pMsg;
-}
-
+- (id)initWithMsg:(lw::HTTPMsg*)p;
 @end
 
 namespace lw{
+    HTTPErrorCallback _pErrorCallback = NULL;
+    
+    void setHTTPErrorCallback(HTTPErrorCallback pCallback){
+        _pErrorCallback = pCallback;
+    }
+    
 	HTTPMsg::HTTPMsg(const char* route, HTTPClient* pClient, bool useHTTPS)
 	:_pClient(pClient), _useHTTPS(useHTTPS){
 		lwassert(route);
@@ -100,3 +67,46 @@ namespace lw{
 	}
 	
 } //namespace lw
+
+@implementation HTTPCallback
+- (id)initWithMsg:(lw::HTTPMsg*)p
+{
+    if ( self =[super init] ){
+        pMsg=p;
+        pMsg->_pObjCCallback=self;
+    }
+    return self;
+}
+
+- (void)dealloc
+{
+    [super dealloc];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+{
+    pMsg->getBuff().clear();
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+{
+    pMsg->getBuff().append((char*)([data bytes]), [data length]);
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+{
+    pMsg->onRespond();
+    delete pMsg;
+    [connection release];
+}
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+{
+    lwerror("http error:" << [[error localizedDescription]UTF8String] << " from: " << pMsg->getBuff().c_str());
+    if ( lw::_pErrorCallback ){
+        lw::_pErrorCallback();
+    }
+    pMsg->onError();
+    delete pMsg;
+}
+
+@end

@@ -12,6 +12,7 @@ void dmsSetCallback(DmsCallback* pCallback);
 
 void dmsLogin(const char* gcid, const char* username);
 void dmsLogout();
+void dmsPing();
 void dmsHeartBeat();
 void dmsGetTodayGames();
 void dmsStartGame(int gameid);
@@ -40,6 +41,7 @@ struct DmsGame{
 
 class DmsCallback{
 public:
+    virtual void onNetError(){};
     virtual void onError(const char* error) {};
     virtual void onLogin(int error, const char* gcid, const char* datetime) {};
     virtual void onLogout() {};

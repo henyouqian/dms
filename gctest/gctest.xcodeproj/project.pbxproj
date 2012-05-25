@@ -17,6 +17,7 @@
 		D01A55CF14BC2D3F00D8A7EF /* gctestViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D01A55CE14BC2D3F00D8A7EF /* gctestViewController.mm */; };
 		D01A55D214BC2D3F00D8A7EF /* gctestViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D01A55D014BC2D3F00D8A7EF /* gctestViewController.xib */; };
 		D01A55D914BC324700D8A7EF /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D01A55D814BC324700D8A7EF /* GameKit.framework */; };
+		D0543085156F51F400BF0559 /* dmsLocalDB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0543083156F51F400BF0559 /* dmsLocalDB.cpp */; };
 		D05592B515578D510015F543 /* dmsTestFunc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D05592B315578D510015F543 /* dmsTestFunc.cpp */; };
 		D05592C31559585D0015F543 /* logger.mm in Sources */ = {isa = PBXBuildFile; fileRef = D05592C21559585D0015F543 /* logger.mm */; };
 		D088B3D0154862B600EF638C /* dmsError.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D088B3CF154862B600EF638C /* dmsError.cpp */; };
@@ -45,6 +46,8 @@
 		D01A55CE14BC2D3F00D8A7EF /* gctestViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = gctestViewController.mm; sourceTree = "<group>"; };
 		D01A55D114BC2D3F00D8A7EF /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/gctestViewController.xib; sourceTree = "<group>"; };
 		D01A55D814BC324700D8A7EF /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
+		D0543083156F51F400BF0559 /* dmsLocalDB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dmsLocalDB.cpp; sourceTree = "<group>"; };
+		D0543084156F51F400BF0559 /* dmsLocalDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dmsLocalDB.h; sourceTree = "<group>"; };
 		D05592B315578D510015F543 /* dmsTestFunc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dmsTestFunc.cpp; sourceTree = "<group>"; };
 		D05592B415578D510015F543 /* dmsTestFunc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dmsTestFunc.h; sourceTree = "<group>"; };
 		D05592C11559585D0015F543 /* logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
@@ -163,6 +166,8 @@
 		D0F2BB7E14BD572F009CE7EA /* dms */ = {
 			isa = PBXGroup;
 			children = (
+				D0543083156F51F400BF0559 /* dmsLocalDB.cpp */,
+				D0543084156F51F400BF0559 /* dmsLocalDB.h */,
 				D088B3CD15485F3700EF638C /* dmsError.h */,
 				D088B3CF154862B600EF638C /* dmsError.cpp */,
 				D0F2BB9F14BD6015009CE7EA /* lwUtil.h */,
@@ -257,6 +262,7 @@
 				D05592B515578D510015F543 /* dmsTestFunc.cpp in Sources */,
 				D05592C31559585D0015F543 /* logger.mm in Sources */,
 				D0C13739155D2365009F5025 /* lwFileSys.mm in Sources */,
+				D0543085156F51F400BF0559 /* dmsLocalDB.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

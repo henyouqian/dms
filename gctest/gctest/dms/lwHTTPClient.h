@@ -42,6 +42,8 @@ namespace lw{
 		std::string _strHost;
         bool _httpsEnable;
 	};
+    typedef void (*HTTPErrorCallback) (void);
+    void setHTTPErrorCallback(HTTPErrorCallback pCallback);
     
 } //namespace lw
 
