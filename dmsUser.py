@@ -39,8 +39,8 @@ def userlogin():
     if userisLogin():
         token = session['usertoken']
         g.mc.delete(token)
-    session.clear()
 
+    session.clear()
     row = g.db.get('SELECT user_id, name FROM account_db.Users WHERE gamecenter_id=%s', gcid)
     if (row == None):
         g.db.execute('INSERT INTO account_db.Users (gamecenter_id, name, nationality) VALUES(%s, %s, 0)', gcid, username)
@@ -55,35 +55,40 @@ def userlogin():
         return jsonify(error=DMSERR_SECRET)
     appid = row['app_id']
     
-    row = g.db.get('SELECT last_read FROM AppUserDatas WHERE user_id=%s AND app_id=%s', userid, appid)
+    lastread = 0
+    lastwrite = 0
+    row = g.db.get('SELECT last_read, last_write FROM AppUserDatas WHERE user_id=%s AND app_id=%s', userid, appid)
     if ( row == None ):
         g.db.execute('INSERT INTO AppUserDatas (user_id, app_id, last_read, last_write) VALUES (%s, %s, %s, %s)', userid, appid, 0, 0)
+    else:
+        lastread = row['last_read']
+        lastwrite = row['last_write']
     
     token = uuid.uuid4().hex
     session['usertoken'] = token
     cachedata = [userid, appid]
     g.mc.set(token, cachedata, CACHE_KEEP_SECOND)
-    return jsonify(error=DMSERR_NONE, gcid=gcid, time=str(datetime.datetime.utcnow()))
-
-@userBluePrint.route('/dmsapi/user/logout')
-def userlogout():
-    if userisLogin():
-        token = session['usertoken']
-        g.mc.delete(token)
-    session.clear()
-    return jsonify(error=DMSERR_NONE)
+    return jsonify(error=DMSERR_NONE, userid=userid, datetime=str(datetime.datetime.utcnow()), topid=lastwrite, unread=lastwrite-lastread)
 
 @userBluePrint.route('/dmsapi/user/heartbeat')
 def userheartbeat():
     if (not userisLogin()):
         return jsonify(error=DMSERR_LOGIN)
+
+    row = g.db.get('SELECT last_read, last_write FROM AppUserDatas WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
+    if row == None:
+        return jsonify(error=DMSERR_SQL)
+    lastread = row['last_read']
+    lastwrite = row['last_write']
+
     token = session['usertoken']
     g.mc.delete(token)
     token = uuid.uuid4().hex
     session['usertoken'] = token
     cachedata = [g.userid, g.appid]
     g.mc.set(token, cachedata, CACHE_KEEP_SECOND)
-    return jsonify(error=DMSERR_NONE, time=str(datetime.datetime.utcnow()))
+
+    return jsonify(error=DMSERR_NONE, datetime=str(datetime.datetime.utcnow()), topid=lastwrite, unread=lastwrite-lastread)
 
 @userBluePrint.route('/dmsapi/user/gettodaygames')
 def usergettodaygames():
@@ -155,29 +160,26 @@ def getunread():
 def gettimeline():
     if (not userisLogin()):
         return jsonify(error=DMSERR_LOGIN)
-    offset = request.args.get('offset', type=int)
+    topid = request.args.get('topid', type=int)
     limit = request.args.get('limit', type=int)
-    if ( offset==None or offset < 0 or limit <= 0 ):
+    if ( topid==None or topid <= 0 or limit <= 0 ):
         return jsonify(error=DMSERR_PARAM)
     limit = min(limit, TIMELINE_LIMIT)
-    
-    row = g.db.get('SELECT last_read, last_write FROM AppUserDatas WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
+    row = g.db.get('SELECT last_write FROM AppUserDatas WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
     if row == None:
         return jsonify(error=DMSERR_SQL)
-    lastread = row['last_read']
     lastwrite = row['last_write']
-    maxid = max(lastwrite-offset, 0)
-    minid = max(offset-limit, 0)
-    if offset == 0:
-        row = g.db.execute('UPDATE AppUserDatas SET last_read=last_write WHERE user_id=%s AND app_id=%s', g.userid, g.appid)
 
     rows = g.db.iter('''SELECT user_id, game_id, date, row, rank, score, time, user_name, nationality, idx_app_user FROM Ranks
                         WHERE user_id=%s AND app_id=%s AND idx_app_user<=%s AND idx_app_user>%s
                         ORDER BY idx_app_user DESC LIMIT %s'''
-                        , g.userid, g.appid, maxid, minid, limit)
+                        , g.userid, g.appid, topid, topid-limit, limit)
     ranks = [{'idx':row['idx_app_user'], 'userid':row['user_id'], 'gameid':row['game_id'], 'date':str(row['date']), 'row':row['row'], 'rank':row['rank'], 'score':row['score'], 'time':str(row['time']), 'username':row['user_name'], 'nationality':row['nationality'] } for row in rows]
 
     return jsonify(error=DMSERR_NONE, ranks=ranks)
     
-
-
+@userBluePrint.route('/dmsapi/user/allread')
+def allread():
+    if (not userisLogin()):
+        return jsonify(error=DMSERR_LOGIN)
+    g.db.execute('UPDATE AppUserDatas SET last_read=last_write WHERE user_id=%s AND app_id=%s', g.userid, g.appid)

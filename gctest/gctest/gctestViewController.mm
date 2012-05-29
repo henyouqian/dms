@@ -34,9 +34,7 @@
     GKLocalPlayer *localPlayer = [GKLocalPlayer localPlayer];
     dmsLogin([localPlayer.playerID UTF8String], [localPlayer.alias UTF8String]);
 }
--(IBAction)onLogout:(id)sender{
-    dmsLogout();
-}
+
 -(IBAction)onHeart:(id)sender{
     dmsHeartBeat();
 }
@@ -65,6 +63,8 @@
     [tfFakeLogin resignFirstResponder];
     [tfStartGameID resignFirstResponder];
     [tfSubmitGameID resignFirstResponder];
+    [tfTimelineOffset resignFirstResponder];
+    [tfTimelineLimit resignFirstResponder];
 }
 
 -(IBAction)onTimeline:(id)sender{

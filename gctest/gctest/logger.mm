@@ -26,26 +26,22 @@ void Logger::onError(const char* text){
     addLog(str.c_str());
 }
 
-void Logger::onLogin(int error, const char* gcid, const char* datetime){
+void Logger::onLogin(int error, int userid, const char* gcid, const char* datetime, int topRankId, int unread){
     std::stringstream ss;
     if ( error ){
         ss << "onLogin:error=" << getDmsErrorString(error);
     }else{
-        ss << "onLogin:gcid=" << gcid << ", datatime=" << datetime;
+        ss << "onLogin:userid=" << userid << ",gcid=" << gcid << ",datatime=" << datetime << ",topid=" << topRankId << ",unread=" << unread;
     }
     addLog(ss.str().c_str());
 }
 
-void Logger::onLogout(){
-    addLog("onLogout");
-}
-
-void Logger::onHeartBeat(int error){
+void Logger::onHeartBeat(int error, const char* datetime, int topRankId, int unread){
     std::stringstream ss;
     if ( error ){
         ss << "onHeartBeat:error=" << getDmsErrorString(error);
     }else{
-        ss << "onHeartBeat";
+        ss << "onHeartBeat: datetime=" << datetime << " topid=" << topRankId << " unread=" << unread;
     }
     addLog(ss.str().c_str());
 }
@@ -95,14 +91,14 @@ void Logger::onGetUnread(int error, int unread, int topid){
     addLog(ss.str().c_str());
 }
 
-void Logger::onGetTimeline(int error, std::vector<DmsRank>& ranks){
+void Logger::onGetTimeline(int error, const std::vector<DmsRank>& ranks){
     std::stringstream ss;
     if ( error ){
         ss << "onGetTimeline:error=" << getDmsErrorString(error);
     }else{
         ss << "onGetTimeline:";
-        std::vector<DmsRank>::iterator it = ranks.begin();
-        std::vector<DmsRank>::iterator itend = ranks.end();
+        std::vector<DmsRank>::const_iterator it = ranks.begin();
+        std::vector<DmsRank>::const_iterator itend = ranks.end();
         for ( ; it != itend; ++it ){
             ss << "\n  idx=" << it->idx;
             ss << " rw=" << it->row;

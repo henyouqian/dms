@@ -58,3 +58,4 @@ CREATE TABLE AppUserDatas  ( user_id        INT UNSIGNED NOT NULL
 CREATE TABLE UserDatas  (    user_id        INT UNSIGNED PRIMARY KEY
                             ,cash           INT UNSIGNED
                         )ENGINE = InnoDB;
+                        

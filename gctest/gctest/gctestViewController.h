@@ -25,7 +25,6 @@ class Logger;
 -(void)setCallback;
 
 -(IBAction)onLogin:(id)sender;
--(IBAction)onLogout:(id)sender;
 -(IBAction)onHeart:(id)sender;
 -(IBAction)onGetTodayGames:(id)sender;
 -(IBAction)onStartGames:(id)sender;

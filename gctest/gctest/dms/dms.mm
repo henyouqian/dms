@@ -3,39 +3,41 @@
 #include "cJSON.h"
 #include "dmsLocalDB.h"
 
-void onLogin(int error, const char* gcid, const char* datetime);
-void onLogout();
-void onHeartBeat(int error);
+#define RANKS_PER_PAGE 10
+
+void onLogin(int error, int userid, const char* gcid, const char* datetime, int topRankId, int unread);
+void onHeartBeat(int error, const char* datetime, int topRankId, int unread);
 void onGetTodayGames(int error, const std::vector<DmsGame>& games);
 void onStartGame(int error, const char* token, int gameid);
 void onSubmitScore(int error, int gameid, int score);
 void onGetUnread(int error, int unread, int topid);
-void onGetTimeline(int error, std::vector<DmsRank>& ranks);
+void onGetTimeline(int error, const std::vector<DmsRank>& ranks);
 
 @class DmsMain;
 
 namespace {
     struct Data{
         Data():pHttpClient(NULL), isLogin(false){}
-        std::string gcid;
         bool isLogin;
         lw::HTTPClient* pHttpClient;
         DmsCallback* pCallback;
         std::string gameStartToken;
         DmsMain* dmsMain;
         DmsLocalDB* pLocalDB;
+        int tHeartBeat;
+        
+        std::vector<DmsGame> games;
     };
     
     Data* _pd = NULL;
     void netErrorCallback(){
         lwinfo("netErrorCallback");
-        _pd->isLogin = false;
     }
 }
 
 @interface DmsMain : NSObject {
 @private
-    int _tHeartBeat;
+    
 }
 @end
 
@@ -45,7 +47,7 @@ namespace {
 {
     if ( self =[super init] ){
         [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(timerAdvanced:) userInfo:nil repeats:YES];
-        _tHeartBeat = 0;
+        _pd->tHeartBeat = 0;
     }
     return self;
 }
@@ -57,10 +59,10 @@ namespace {
 
 - (void)timerAdvanced:(NSTimer *)timer{
     if ( _pd->isLogin ){
-        if ( _tHeartBeat >= HEART_BEAT_SECOND ){
-            ++_tHeartBeat;
+        ++_pd->tHeartBeat;
+        if ( _pd->tHeartBeat >= HEART_BEAT_SECOND ){
             dmsHeartBeat();
-            _tHeartBeat = 0;
+            _pd->tHeartBeat = 0;
         }
     }else{
         
@@ -152,6 +154,13 @@ namespace {
         return NULL;
     }
     
+    void errorDefaultProc(int error){
+        if ( error == DMSERR_LOGIN ){
+            GKLocalPlayer *localPlayer = [GKLocalPlayer localPlayer];
+            dmsLogin([localPlayer.playerID UTF8String], [localPlayer.alias UTF8String]);
+        }
+    }
+    
     class MsgLogin : public lw::HTTPMsg{
     public:
         MsgLogin(const char* gcid, const char* username)
@@ -159,36 +168,30 @@ namespace {
             std::stringstream ss;
             ss << "?gcid=" << gcid << "&appsecretkey=" << APP_SECRET_KEY << "&username=" << username;
             addParam(ss.str().c_str());
+            _gcid = gcid;
         }
         virtual void onRespond(){
             int error = DMSERR_NONE;
-            const char* gcid = NULL;
+            int userid = 0;
             const char* datetime = NULL;
+            int topid = 0;
+            int unread = 0;
             cJSON *json=parseMsg(_buff.c_str(), error);
             if ( error == DMSERR_NONE ){
-                gcid = getJsonString(json, "gcid", error);
-                if ( gcid ){
-                    _pd->gcid = gcid;
-                    _pd->isLogin = true;
-                }
+                userid = getJsonInt(json, "userid", error);
+                datetime = getJsonString(json, "datetime", error);
+                topid = getJsonInt(json, "topid", error);
+                unread = getJsonInt(json, "unread", error);
             }
             if ( error == DMSERR_NONE ){
-                datetime = getJsonString(json, "time", error);
+                _pd->isLogin = true;
+                _pd->tHeartBeat = 0;
             }
-            onLogin(error, gcid, datetime);
+            onLogin(error, userid, _gcid.c_str(), datetime, topid, unread);
             cJSON_Delete(json);
         }
-    };
-    
-    class MsgLogout : public lw::HTTPMsg{
-    public:
-        MsgLogout()
-        :lw::HTTPMsg("/dmsapi/user/logout", _pd->pHttpClient, false){
-            
-        }
-        virtual void onRespond(){
-            onLogout();
-        }
+    private:
+        std::string _gcid;
     };
     
     class MsgHeartBeat : public lw::HTTPMsg{
@@ -199,12 +202,16 @@ namespace {
         virtual void onRespond(){
             int error = DMSERR_NONE;
             const char* datetime = NULL;
+            int topid = 0;
+            int unread = 0;
             cJSON *json=parseMsg(_buff.c_str(), error);
             if ( error == DMSERR_NONE ){
-                datetime = getJsonString(json, "games", error);
-                lwinfo(datetime);
+                datetime = getJsonString(json, "datetime", error);
+                topid = getJsonInt(json, "topid", error);
+                unread = getJsonInt(json, "unread", error);
             }
-            onHeartBeat(error);
+            errorDefaultProc(error);
+            onHeartBeat(error, datetime, topid, unread);
             cJSON_Delete(json);
         }
     };
@@ -222,7 +229,7 @@ namespace {
             if ( error == DMSERR_NONE ){
                 jgames = getJsonArray(json, "games", error);
             }
-            std::vector<DmsGame> games;
+            _pd->games.clear();
             if ( error == DMSERR_NONE ){
                 int sz = cJSON_GetArraySize(jgames);
                 for ( int i = 0; i < sz; ++i ){
@@ -239,11 +246,12 @@ namespace {
                         }
                     }
                     if ( error == DMSERR_NONE ){
-                        games.push_back(game);
+                        _pd->games.push_back(game);
                     }
                 }
             }
-            onGetTodayGames(error, games);
+            errorDefaultProc(error);
+            onGetTodayGames(error, _pd->games);
             cJSON_Delete(json);
         }
     };
@@ -266,6 +274,7 @@ namespace {
                     _pd->gameStartToken = token;
                 }
             }
+            errorDefaultProc(error);
             onStartGame(error, token, _gameID);
             cJSON_Delete(json);
         }
@@ -291,6 +300,7 @@ namespace {
                 gameid = getJsonInt(json, "gameid", error);
                 score = getJsonInt(json, "score", error);
             }
+            errorDefaultProc(error);
             onSubmitScore(error, gameid, score);
             cJSON_Delete(json);
         }
@@ -313,6 +323,7 @@ namespace {
             if ( error == DMSERR_NONE ){
                 topid = getJsonInt(json, "topid", error);
             }
+            errorDefaultProc(error);
             onGetUnread(error, unread, topid);
             cJSON_Delete(json);
         }
@@ -320,10 +331,10 @@ namespace {
     
     class MsgGetTimeline : public lw::HTTPMsg{
     public:
-        MsgGetTimeline(int offset, int limit)
+        MsgGetTimeline(int topid, int limit)
         :lw::HTTPMsg("/dmsapi/user/gettimeline", _pd->pHttpClient, false){
             std::stringstream ss;
-            ss << "?offset=" << offset << "&limit=" << limit;
+            ss << "?topid=" << topid << "&limit=" << limit;
             addParam(ss.str().c_str());
         }
         virtual void onRespond(){
@@ -356,12 +367,18 @@ namespace {
                     }
                 }
             }
+            errorDefaultProc(error);
+            if ( error == DMSERR_NONE ){
+                _pd->pLocalDB->addTimeline(ranks);
+            }
             onGetTimeline(error, ranks);
             cJSON_Delete(json);
         }
     };
     
 }//namespace
+
+
 
 void dmsInit(){
     lwassert(_pd==NULL);
@@ -391,25 +408,14 @@ void dmsSetCallback(DmsCallback* pCallback){
 
 void dmsLogin(const char* gcid, const char* username){
     lwassert(_pd);
-    _pd->gcid.clear();
     _pd->gameStartToken.clear();
-    lw::HTTPMsg* pMsg = new MsgLogin(gcid, username);
-    pMsg->send();
-}
-
-void dmsLogout(){
-    lwassert(_pd);
-    _pd->gcid.clear();
     _pd->isLogin = false;
-    _pd->gameStartToken.clear();
-    lw::HTTPMsg* pMsg = new MsgLogout();
-    pMsg->send();
-}
-
-void dmsPing(){
-    lwassert(_pd);
-    lw::HTTPMsg* pMsg = new MsgPing();
-    pMsg->send();
+    if ( gcid && username ){
+        lw::HTTPMsg* pMsg = new MsgLogin(gcid, username);
+        pMsg->send();
+    }else{
+        lwerror("gamecenter not login");
+    }
 }
 
 void dmsHeartBeat(){
@@ -454,35 +460,50 @@ void dmsGetUnread(){
 void dmsGetTimeline(int offset, int limit){
     lwassert(_pd);
     if ( offset < 0 || limit <=0 ){
-        lwerror("param error");
+        lwerror("offset < 0 || limit <=0");
         return;
     }
-    lw::HTTPMsg* pMsg = new MsgGetTimeline(offset, limit);
-    pMsg->send();
+    int topid = _pd->pLocalDB->getTopRankId()-offset;
+    limit = std::min(topid, limit);
+    std::vector<DmsRank> ranks;
+    if ( limit <=0 ){
+        lwerror("limit <=0");
+        return;
+    }
+    _pd->pLocalDB->getTimeline(ranks, offset, limit);
+    if ( ranks.size() == limit ){
+        onGetTimeline(DMSERR_NONE, ranks);
+    }else{
+        lw::HTTPMsg* pMsg = new MsgGetTimeline(topid, limit);
+        pMsg->send();
+    }
 }
 
-void onLogin(int error, const char* gcid, const char* datetime){
+void onLogin(int error, int userid, const char* gcid, const char* datetime, int topRankId, int unread){
     if ( error ){
         lwerror(getDmsErrorString(error));
+    }else{
+        _pd->pLocalDB->setUserid(userid);
+        _pd->pLocalDB->setToprankidUnread(topRankId, unread);
     }
     if ( _pd->pCallback ){
-        _pd->pCallback->onLogin(error, gcid, datetime);
+        _pd->pCallback->onLogin(error, userid, gcid, datetime, topRankId, unread);
     }
 }
 
-void onLogout(){
-    lwinfo("logout");
-    if ( _pd->pCallback ){
-        _pd->pCallback->onLogout();
-    }
-}
-
-void onHeartBeat(int error){
+void onHeartBeat(int error, const char* datetime, int topRankId, int unread){
     if ( error ){
         lwerror(getDmsErrorString(error));
+    }else{
+        int oldTopRankId = _pd->pLocalDB->getTopRankId();
+        _pd->pLocalDB->setToprankidUnread(topRankId, unread);
+        if ( topRankId != oldTopRankId ){
+            dmsGetTimeline(0, RANKS_PER_PAGE);
+        }
     }
+    
     if ( _pd->pCallback ){
-        _pd->pCallback->onHeartBeat(error);
+        _pd->pCallback->onHeartBeat(error, datetime, topRankId, unread);
     }
 }
 
@@ -522,7 +543,7 @@ void onGetUnread(int error, int unread, int topid){
     }
 }
 
-void onGetTimeline(int error, std::vector<DmsRank>& ranks){
+void onGetTimeline(int error, const std::vector<DmsRank>& ranks){
     if ( error ){
         lwerror(getDmsErrorString(error));
     }

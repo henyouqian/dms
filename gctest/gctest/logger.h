@@ -9,14 +9,13 @@ public:
     ~Logger();
     void addLog(const char* log);
     virtual void onError(const char* error);
-    virtual void onLogin(int error, const char* gcid, const char* datetime);
-    virtual void onLogout();
-    virtual void onHeartBeat(int error);
+    virtual void onLogin(int error, int userid, const char* gcid, const char* datetime, int topRankId, int unread);
+    virtual void onHeartBeat(int error, const char* datetime, int topRankId, int unread);
     virtual void onGetTodayGames(int error, const std::vector<DmsGame>& games);
     virtual void onStartGame(int error, int gameid);
     virtual void onSubmitScore(int error, int gameid, int score);
     virtual void onGetUnread(int error, int unread, int topid);
-    virtual void onGetTimeline(int error, std::vector<DmsRank>& ranks);
+    virtual void onGetTimeline(int error, const std::vector<DmsRank>& ranks);
     
 private:
     UITextView* _pTextView;

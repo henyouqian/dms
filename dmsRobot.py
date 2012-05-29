@@ -8,7 +8,7 @@ def genUser(count):
     for i in xrange(0,count):
         if ( i % 1000 == 0 ):
             print i
-        name = 'robot%s' % (i+1000000)
+        name = 'r%s' % i
         try:
             cur.execute('INSERT INTO account_db.Users (gamecenter_id, name, nationality) VALUES(%s, %s, 99)', (name, name))
             conn.commit()
@@ -28,7 +28,7 @@ def genScore(dayoffset, gameid, count):
     for i in xrange(0,count):
         if ( i % 100 == 0 ):
             print i
-        name = 'robot%s' % (i+1000000)
+        name = 'r%s' % i
         cur.execute('SELECT user_id FROM account_db.Users WHERE gamecenter_id=%s', (name,));
         userid = cur.fetchone()[0]
         try:

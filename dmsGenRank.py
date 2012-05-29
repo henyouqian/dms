@@ -10,10 +10,10 @@ def genRank(date):
     cur.execute('SELECT game_id, score_order FROM Games')
     i = 0
     for row in cur.fetchall():
-        print i
         i += 1;
         gameid = row[0]
         order = row[1]
+        print 'genRank: gameid=%d' % gameid
         comp=''
         if ( order ):
             order = 'DESC'
@@ -38,7 +38,8 @@ def genRank(date):
                         WHERE s.game_id=%s AND s.date=%s AND s.score!=0
                         ORDER BY score '''+order+' , time ASC', (gameid, datestr))
         conn.commit()
-    print 'Rank done!'
+
+    print 'Rank done!', datestr
     
     # i = 0
     # cur.execute('SELECT app_id FROM Apps')
