@@ -2,6 +2,7 @@
 #include "dmsError.h"
 #include "cJSON.h"
 #include "dmsLocalDB.h"
+#include <time.h>
 
 #define RANKS_PER_PAGE 10
 
@@ -19,19 +20,29 @@ namespace {
     struct Data{
         Data():pHttpClient(NULL), isLogin(false){}
         bool isLogin;
+        bool isOnline;
         lw::HTTPClient* pHttpClient;
         DmsCallback* pCallback;
         std::string gameStartToken;
         DmsMain* dmsMain;
         DmsLocalDB* pLocalDB;
         int tHeartBeat;
+        int timeDiff;
         
         std::vector<DmsGame> games;
     };
     
     Data* _pd = NULL;
+    
     void netErrorCallback(){
-        lwinfo("netErrorCallback");
+        if ( _pd ){
+            _pd->isOnline = false;
+        }
+    }
+    void netOKCallback(){
+        if ( _pd ){
+            _pd->isOnline = true;
+        }
     }
 }
 
@@ -58,14 +69,18 @@ namespace {
 }
 
 - (void)timerAdvanced:(NSTimer *)timer{
-    if ( _pd->isLogin ){
+    if ( _pd && _pd->isLogin ){
         ++_pd->tHeartBeat;
         if ( _pd->tHeartBeat >= HEART_BEAT_SECOND ){
             dmsHeartBeat();
             _pd->tHeartBeat = 0;
         }
-    }else{
-        
+        //test
+        time_t localT;
+        time(&localT);
+        time_t serverT = localT + _pd->timeDiff;
+        tm* p = localtime(&serverT);
+        lwinfo(p->tm_year+1900 <<","<< p->tm_mon+1 <<","<< p->tm_mday <<","<< p->tm_hour<<","<< p->tm_min<<","<< p->tm_sec);
     }
 }
 
@@ -156,6 +171,7 @@ namespace {
     
     void errorDefaultProc(int error){
         if ( error == DMSERR_LOGIN ){
+            _pd->isLogin = false;
             GKLocalPlayer *localPlayer = [GKLocalPlayer localPlayer];
             dmsLogin([localPlayer.playerID UTF8String], [localPlayer.alias UTF8String]);
         }
@@ -209,6 +225,10 @@ namespace {
                 datetime = getJsonString(json, "datetime", error);
                 topid = getJsonInt(json, "topid", error);
                 unread = getJsonInt(json, "unread", error);
+            }
+            if ( error == DMSERR_NONE ){
+                _pd->isLogin = true;
+                _pd->tHeartBeat = 0;
             }
             errorDefaultProc(error);
             onHeartBeat(error, datetime, topid, unread);
@@ -383,13 +403,17 @@ namespace {
 void dmsInit(){
     lwassert(_pd==NULL);
     _pd = new Data;
+    _pd->isLogin = false;
+    _pd->isOnline = false;
     _pd->pHttpClient = new lw::HTTPClient("127.0.0.1:8000");
     _pd->pHttpClient->enableHTTPS(false);
     _pd->pCallback = NULL;
     _pd->dmsMain = [[DmsMain alloc] init];
     _pd->pLocalDB = new DmsLocalDB();
+    _pd->timeDiff = 0;
     
     lw::setHTTPErrorCallback(netErrorCallback);
+    lw::setHTTPOKCallback(netOKCallback);
 }
 
 void dmsDestroy(){
@@ -500,6 +524,20 @@ void onHeartBeat(int error, const char* datetime, int topRankId, int unread){
         if ( topRankId != oldTopRankId ){
             dmsGetTimeline(0, RANKS_PER_PAGE);
         }
+        int year, month, day, hour, minute, second;
+        sscanf(datetime, "%d-%d-%d %d:%d:%d.", &year, &month, &day, &hour, &minute, &second);
+        tm t;
+        t.tm_year = year-1900;
+        t.tm_mon = month-1;
+        t.tm_mday = day;
+        t.tm_hour = hour;
+        t.tm_min = minute;
+        t.tm_sec = second;
+        t.tm_isdst = false;
+        time_t serverT = mktime(&t);
+        time_t localT;
+        time(&localT);
+        _pd->timeDiff = serverT - localT;
     }
     
     if ( _pd->pCallback ){

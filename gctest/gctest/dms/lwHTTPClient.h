@@ -43,7 +43,9 @@ namespace lw{
         bool _httpsEnable;
 	};
     typedef void (*HTTPErrorCallback) (void);
+    typedef void (*HTTPOKCallback) (void);
     void setHTTPErrorCallback(HTTPErrorCallback pCallback);
+    void setHTTPOKCallback(HTTPOKCallback pCallback);
     
 } //namespace lw
 

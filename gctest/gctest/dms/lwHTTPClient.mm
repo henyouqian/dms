@@ -9,10 +9,15 @@
 @end
 
 namespace lw{
-    HTTPErrorCallback _pErrorCallback = NULL;
+    HTTPErrorCallback _pHTTPErrorCallback = NULL;
+    HTTPErrorCallback _pHTTPOKCallback = NULL;
     
     void setHTTPErrorCallback(HTTPErrorCallback pCallback){
-        _pErrorCallback = pCallback;
+        _pHTTPErrorCallback = pCallback;
+    }
+    
+    void setHTTPOKCallback(HTTPOKCallback pCallback){
+        _pHTTPOKCallback = pCallback;
     }
     
 	HTTPMsg::HTTPMsg(const char* route, HTTPClient* pClient, bool useHTTPS)
@@ -86,6 +91,9 @@ namespace lw{
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     pMsg->getBuff().clear();
+    if ( lw::_pHTTPOKCallback ){
+        lw::_pHTTPOKCallback();
+    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
@@ -102,8 +110,8 @@ namespace lw{
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
     lwerror("http error:" << [[error localizedDescription]UTF8String] << " from: " << pMsg->getBuff().c_str());
-    if ( lw::_pErrorCallback ){
-        lw::_pErrorCallback();
+    if ( lw::_pHTTPErrorCallback ){
+        lw::_pHTTPErrorCallback();
     }
     pMsg->onError();
     delete pMsg;
