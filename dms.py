@@ -4,6 +4,7 @@ import pylibmc
 import thread
 import datetime
 import time
+import sys
 import dmsConfig
 import dmsUser
 import dmsDev
@@ -11,7 +12,6 @@ import dmsDevView
 import dmsGenRank
 
 app = Flask(__name__)
-app.debug = True
 app.secret_key = '0dc36da3afbb475dbcf27ce2d071c4eb'
 
 app.register_blueprint(dmsUser.userBluePrint)
@@ -51,8 +51,8 @@ from tornado.ioloop import IOLoop
 
 if __name__ == '__main__':
     init()
-    
-    if app.debug:
+    argv = sys.argv
+    if ('-d' in argv):
         app.run(host='0.0.0.0', port=8000)
     else:
         http_server = HTTPServer(WSGIContainer(app))
