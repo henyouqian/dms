@@ -1,7 +1,10 @@
 ﻿import MySQLdb
+import dmsConfig
 
-def genRank(date):
-    conn = MySQLdb.connect(host="localhost",user="root",passwd="Nmmgb808313",db="dms_db",charset = "utf8")
+def connect():
+    return MySQLdb.connect(host=dmsConfig.host,user=dmsConfig.user,passwd=dmsConfig.passwd,db=dmsConfig.dms_db,charset = "utf8")
+
+def genRank(date, conn):
     cur=conn.cursor()
 	
     datestr = str(date)
@@ -10,7 +13,7 @@ def genRank(date):
     cur.execute('SELECT game_id, score_order FROM Games')
     i = 0
     for row in cur.fetchall():
-        i += 1;
+        i += 1
         gameid = row[0]
         order = row[1]
         print 'genRank: gameid=%d' % gameid
@@ -49,7 +52,7 @@ def genRank(date):
     #     for user in cur.fetchall():
     #         if ( i % 10 == 0 ):
     #             print i
-    #         i += 1;
+    #         i += 1
     #         userid = user[0]
     #         cur.execute('SELECT MAX(idx_app_user) FROM Ranks WHERE app_id=%s AND user_id=%s', (appid, userid))
     #         maxid = cur.fetchone()[0]
@@ -60,8 +63,6 @@ def genRank(date):
     #         cur.execute('UPDATE AppUserDatas SET last_write=@idx WHERE user_id=%s AND app_id=%s AND last_write<@idx', (userid, appid))
     #         conn.commit()
     # print 'Rank idx done!'
-    
-    conn.close()
 
 from datetime import datetime, timedelta
 def genToday():
@@ -73,3 +74,41 @@ def genRankOffset(offset):
     dlt = timedelta(days=offset)
     d = d + dlt
     genRank(d)
+
+def genAll():
+    conn = connect()
+    cur = conn.cursor()
+    datefrom = None
+    dateto = None
+    cur.execute('SELECT MAX(date) FROM Ranks')
+    row = cur.fetchone()
+    if ( row[0] ):
+        datefrom = row[0]
+    else:
+        cur.execute('SELECT MIN(date) FROM Scores')
+        row = cur.fetchone()
+        if ( row ):
+            datefrom = row[0]
+        
+    cur.execute('SELECT MAX(date) FROM Scores')
+    row = cur.fetchone()
+    if ( row[0] ):
+        dateto = row[0]
+
+    if ( dateto ):
+        oneday = timedelta(days=1)
+        datefrom = datefrom + oneday
+        date = datefrom
+        while date <= dateto:
+            genRank(date, conn)
+            date = date + oneday
+
+    conn.close()
+
+
+
+
+
+
+
+

@@ -41,7 +41,7 @@ def genRankThread():
         if ( d != app.rankDate ):
             app.rankDate = d
             print 'genRank begin:date=%s' % str(app.rankDate)
-            dmsGenRank.genRank(app.rankDate)
+            dmsGenRank.genAll()
             print 'genRank end:date=%s' % str(app.rankDate)
         time.sleep(10)
 
@@ -53,6 +53,7 @@ if __name__ == '__main__':
     init()
     argv = sys.argv
     if ('-d' in argv):
+        app.debug = True;
         app.run(host='0.0.0.0', port=8000)
     else:
         http_server = HTTPServer(WSGIContainer(app))
