@@ -44,7 +44,7 @@ def genScore(dayoffset, gameid, count):
             cur.execute('''INSERT INTO Scores (user_id, game_id, date, time, score, idx_app_user) VALUES(
                         %s, %s, %s, UTC_TIME(), %s, %s)'''
                         , (userid, gameid, date, score, lastwrite+1))
-            cur.execute('UPDATE AppUserDatas SET last_write=last_write+1 WHERE user_id=%s AND app_id=%s', (userid, appid))
+            #cur.execute('UPDATE AppUserDatas SET last_write=last_write+1 WHERE user_id=%s AND app_id=%s', (userid, appid))
             conn.commit()
         except:
             pass
