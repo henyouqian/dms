@@ -184,10 +184,11 @@ def usergetranks():
     if ( offset==None or offset < 0 or limit==None or limit <= 0 ):
         return jsonify(error=DMSERR_PARAM)
     limit = min(limit, GETRANK_LIMIT)
+    offset += 1
 
     rows = g.db.iter('''SELECT user_id, game_id, date, row, rank, score, time, user_name, nationality, idx_app_user FROM Ranks
                         WHERE game_id=%s AND date=%s AND row>=%s AND row<%s
-                        ORDER BY idx_app_user ASC'''
+                        ORDER BY row ASC'''
                         , gameid, date, offset, offset+limit)
     ranks = [{'idx':row['idx_app_user'], 'userid':row['user_id'], 'gameid':row['game_id'], 'date':str(row['date']), 'row':row['row'], 'rank':row['rank'], 'score':row['score'], 'time':str(row['time']), 'username':row['user_name'], 'nationality':row['nationality'] } for row in rows]
     
